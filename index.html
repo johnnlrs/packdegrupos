@@ -13,7 +13,7 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .accordion-content { transition: max-height 0.3s ease-out, padding 0.3s ease; }
+        .accordion-content { transition: max-height 0.18s ease-out; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
@@ -689,75 +689,13 @@
             }
         }
 
-        function renderDynamicBlocks() {
-            const scrollAtual = window.scrollY;
-            const blocosAbertos = Array.from(document.querySelectorAll('.accordion-content'))
-                .filter(el => el.style.maxHeight && el.style.maxHeight !== '0px')
-                .map(el => el.id);
-
-            const container = document.getElementById('dynamic-blocks-container');
-            if(!container) return;
-            container.innerHTML = '';
-
-            let seenBlockIds = new Set();
-            let uniqueBlocks = blocksOrder.filter(block => {
-                if (seenBlockIds.has(block.id)) return false;
-                seenBlockIds.add(block.id);
-                return true;
-            });
-
-            uniqueBlocks.forEach((block, index) => {
-                if (!groupLinks[block.id]) {
-                    groupLinks[block.id] = { stateItems: [], cities: [] };
-                }
-
-                const div = document.createElement('div');
-                div.className = "bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden";
-                
-                const header = document.createElement('div');
-                header.className = "w-full px-5 py-4 flex items-center justify-between text-left font-semibold text-slate-800 bg-white hover:bg-slate-50/50 transition";
-                
-                let colorBadge = "bg-blue-500";
-                if(block.color === 'purple') colorBadge = "bg-purple-500";
-                if(block.color === 'emerald') colorBadge = "bg-emerald-500";
-
-                const blockData = groupLinks[block.id];
-                const totalStateLinks = (blockData.stateItems || []).filter(i => i.type === 'link').length;
-                const totalCityLinks = (blockData.cities || []).reduce((acc, c) => acc + (c.items || []).filter(i => i.type === 'link').length, 0);
-                const totalLinksCount = totalStateLinks + totalCityLinks;
-
-                let orderingControls = '';
-                if(sessionRole === 'admin') {
-                    orderingControls = `
-                        <div class="flex items-center gap-1.5 ml-2 mr-2 shrink-0 select-none">
-                            <button type="button" onclick="moveBlock(${index}, -1); event.stopPropagation();" class="p-1 hover:bg-slate-200 rounded text-xs transition" title="Mover para cima">🔼</button>
-                            <button type="button" onclick="moveBlock(${index}, 1); event.stopPropagation();" class="p-1 hover:bg-slate-200 rounded text-xs transition" title="Mover para baixo">🔽</button>
-                            <button type="button" onclick="editBlockName('${block.id}'); event.stopPropagation();" class="p-1 hover:bg-blue-100 rounded text-xs text-blue-600 transition" title="Editar Nome da Categoria">✏️</button>
-                            ${block.type === 'custom' ? `<button type="button" onclick="deleteCustomBlock('${block.id}', ${index}); event.stopPropagation();" class="p-1 hover:bg-rose-100 rounded text-xs text-rose-600 transition" title="Excluir Categoria">🗑️</button>` : ''}
-                        </div>
-                    `;
-                }
-
-                header.innerHTML = `
-                    <div class="flex items-center gap-3 min-w-0 cursor-pointer w-full" onclick="toggleAccordion('${block.id}')">
-                        <span class="w-2 h-2 rounded-full ${colorBadge} shrink-0"></span>
-                        <span class="truncate text-slate-900 font-bold" id="title-text-${block.id}">${block.name}</span>
-                        <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-normal shrink-0">
-                            ${totalLinksCount} links
-                        </span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        ${orderingControls}
-                        <svg id="arrow-${block.id}" onclick="toggleAccordion('${block.id}')" class="w-5 h-5 text-slate-400 cursor-pointer transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                        </svg>
-                    </div>
-                `;
-
-                const contentDiv = document.createElement('div');
-                contentDiv.id = `content-${block.id}`;
-                contentDiv.className = "accordion-content max-h-0 overflow-hidden bg-slate-50 border-t border-transparent transition-all duration-300";
-                
+        function renderBlockContent(blockId) {
+            const index = blocksOrder.findIndex(b => String(b.id) === String(blockId));
+            const block = blocksOrder[index];
+            if (!block) return;
+            const contentDiv = document.getElementById(`content-${blockId}`);
+            if (!contentDiv || contentDiv.dataset.rendered === '1') return;
+            const blockData = groupLinks[blockId] || (groupLinks[blockId] = {stateItems:[], cities:[]});
                 const innerContainer = document.createElement('div');
                 innerContainer.className = "p-5 space-y-6";
 
@@ -963,7 +901,81 @@
                     innerContainer.appendChild(adminForm);
                 }
 
-                contentDiv.appendChild(innerContainer);
+                contentDiv.appendChild(innerContainer);            contentDiv.dataset.rendered = '1';
+        }
+
+
+        function renderDynamicBlocks() {
+            const scrollAtual = window.scrollY;
+            const blocosAbertos = Array.from(document.querySelectorAll('.accordion-content'))
+                .filter(el => el.style.maxHeight && el.style.maxHeight !== '0px')
+                .map(el => el.id);
+
+            const container = document.getElementById('dynamic-blocks-container');
+            if(!container) return;
+            container.innerHTML = '';
+
+            let seenBlockIds = new Set();
+            let uniqueBlocks = blocksOrder.filter(block => {
+                if (seenBlockIds.has(block.id)) return false;
+                seenBlockIds.add(block.id);
+                return true;
+            });
+
+            uniqueBlocks.forEach((block, index) => {
+                if (!groupLinks[block.id]) {
+                    groupLinks[block.id] = { stateItems: [], cities: [] };
+                }
+
+                const div = document.createElement('div');
+                div.className = "bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden";
+                div.dataset.blockId = block.id;
+                
+                const header = document.createElement('div');
+                header.className = "w-full px-5 py-4 flex items-center justify-between text-left font-semibold text-slate-800 bg-white hover:bg-slate-50/50 transition";
+                
+                let colorBadge = "bg-blue-500";
+                if(block.color === 'purple') colorBadge = "bg-purple-500";
+                if(block.color === 'emerald') colorBadge = "bg-emerald-500";
+
+                const blockData = groupLinks[block.id];
+                const totalStateLinks = (blockData.stateItems || []).filter(i => i.type === 'link').length;
+                const totalCityLinks = (blockData.cities || []).reduce((acc, c) => acc + (c.items || []).filter(i => i.type === 'link').length, 0);
+                const totalLinksCount = totalStateLinks + totalCityLinks;
+
+                let orderingControls = '';
+                if(sessionRole === 'admin') {
+                    orderingControls = `
+                        <div class="flex items-center gap-1.5 ml-2 mr-2 shrink-0 select-none">
+                            <button type="button" onclick="moveBlock(${index}, -1); event.stopPropagation();" class="p-1 hover:bg-slate-200 rounded text-xs transition" title="Mover para cima">🔼</button>
+                            <button type="button" onclick="moveBlock(${index}, 1); event.stopPropagation();" class="p-1 hover:bg-slate-200 rounded text-xs transition" title="Mover para baixo">🔽</button>
+                            <button type="button" onclick="editBlockName('${block.id}'); event.stopPropagation();" class="p-1 hover:bg-blue-100 rounded text-xs text-blue-600 transition" title="Editar Nome da Categoria">✏️</button>
+                            ${block.type === 'custom' ? `<button type="button" onclick="deleteCustomBlock('${block.id}', ${index}); event.stopPropagation();" class="p-1 hover:bg-rose-100 rounded text-xs text-rose-600 transition" title="Excluir Categoria">🗑️</button>` : ''}
+                        </div>
+                    `;
+                }
+
+                header.innerHTML = `
+                    <div class="flex items-center gap-3 min-w-0 cursor-pointer w-full" onclick="toggleAccordion('${block.id}')">
+                        <span class="w-2 h-2 rounded-full ${colorBadge} shrink-0"></span>
+                        <span class="truncate text-slate-900 font-bold" id="title-text-${block.id}">${block.name}</span>
+                        <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-normal shrink-0">
+                            ${totalLinksCount} links
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        ${orderingControls}
+                        <svg id="arrow-${block.id}" onclick="toggleAccordion('${block.id}')" class="w-5 h-5 text-slate-400 cursor-pointer transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </div>
+                `;
+
+                const contentDiv = document.createElement('div');
+                contentDiv.id = `content-${block.id}`;
+                contentDiv.className = "accordion-content max-h-0 overflow-hidden bg-slate-50 border-t border-transparent transition-all duration-300";
+                
+
                 div.appendChild(header);
                 div.appendChild(contentDiv);
                 container.appendChild(div);
@@ -972,12 +984,12 @@
             setTimeout(() => {
                 blocosAbertos.forEach(id => {
                     const el = document.getElementById(id);
-                    if (el) {
-                        el.style.maxHeight = el.scrollHeight + "px";
-                        const baseId = id.replace('content-', '').replace('city-content-', '');
-                        const arrow = document.getElementById(`arrow-${baseId}`) || document.getElementById(`city-arrow-${baseId}`);
-                        if (arrow) arrow.classList.add('rotate-180');
-                    }
+                    if (!el) return;
+                    if (id.startsWith('content-') && el.dataset.rendered !== '1') renderBlockContent(id.slice(8));
+                    el.style.maxHeight = el.scrollHeight + "px";
+                    const baseId = id.replace('content-', '').replace('city-content-', '');
+                    const arrow = document.getElementById(`arrow-${baseId}`) || document.getElementById(`city-arrow-${baseId}`);
+                    if (arrow) arrow.classList.add('rotate-180');
                 });
                 window.scrollTo(0, scrollAtual);
             }, 0);
