@@ -1,0 +1,32 @@
+PACK DE GRUPOS - SEO / GEO / MCP WEB (ATUALIZADO)
+
+Arquivos do pacote:
+- Pack_de_Grupos_SEO_GEO_MCP.html: HTML com metadados SEO, Open Graph/Twitter, Schema.org e texto contextual GEO. Mantém as categorias e o catálogo nativos do site.
+- Pack_de_Grupos_AppsScript_SEO_GEO_MCP.gs: Apps Script com descoberta MCP e ferramentas públicas read-only get_site_info/get_faq, incluindo temas informativos.
+- llms.txt: descrição do catálogo nativo, temas e limites para sistemas de IA.
+- robots.txt: modelo geral de rastreamento, sem domínio/sitemap inventado.
+
+TEMAS FOCAIS
+- Grupos de WhatsApp
+- Renda extra (informativo, sem promessas)
+- Divulgação orgânica e boas práticas anti-spam
+- Marketing digital e WhatsApp para negócios
+- Informações e categorias nativas do catálogo
+
+INSTALAÇÃO
+1. Faça backup dos arquivos atuais.
+2. Substitua o HTML pelo Pack_de_Grupos_SEO_GEO_MCP.html.
+3. No Apps Script, substitua o código pelo .gs, salve e reimplante como nova versão (Deploy > Manage deployments > Edit > New version). Preserve a URL e permissões atuais, se possível.
+4. Publique llms.txt e robots.txt no diretório raiz do domínio, se seu provedor permitir.
+5. Atualize o comentário de Sitemap no robots.txt somente quando tiver URL real e sitemap publicado.
+6. Verifique a página e os arquivos publicados. O Apps Script/HTML não foi testado em navegador nem contra o site publicado nesta etapa.
+
+MCP
+- Endpoint de descoberta: URL do Web App + ?mcp=1.
+- Ferramentas públicas read-only: get_site_info e get_faq.
+- A implementação é básica e não equivale a servidor MCP completo para produção. Revise transporte e compatibilidade antes de anunciá-la como MCP padrão completo.
+
+SEGURANÇA
+Esta atualização tem foco em SEO/GEO e conteúdo público, não corrige o modelo de autenticação nem a autorização das operações de escrita do Apps Script. Faça uma revisão de segurança separada antes de considerar dados e links privados protegidos.
+
+Não há garantia de indexação, posicionamento, citações por IA, renda, vendas ou alcance.
