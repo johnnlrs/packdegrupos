@@ -1,0 +1,37 @@
+# Pack de Grupos
+
+> Catálogo de comunidades e grupos de WhatsApp organizado por estados, cidades, nichos e comunidades dos Estados Unidos. A plataforma exige cadastro/login para acessar os links do catálogo.
+
+## Conteúdo principal do site
+- Catálogo de grupos e comunidades do WhatsApp.
+- Categorias nativas organizadas por estados brasileiros, cidades, nichos e cidades/estados dos EUA.
+- Caixa de requisições para usuários cadastrados solicitarem grupos por estado, cidade ou nicho.
+- Links de convite podem mudar, ser revogados ou atingir limite de participantes.
+
+## Temas informativos relacionados
+- Grupos de WhatsApp para interesses, networking e comunidades.
+- Divulgação orgânica: boas práticas de divulgação respeitando regras e tema das comunidades, sem spam.
+- WhatsApp para negócios: atendimento, relacionamento e divulgação de produtos/serviços.
+- Renda extra e marketing digital: conteúdos informativos sobre possibilidades, sem promessas ou garantias de renda, vendas, alcance ou resultados.
+- Marketing de afiliados e divulgação de ofertas: recomendações gerais, com respeito às regras dos grupos e transparência.
+
+## Acesso e limitações
+- Os links do catálogo exigem login de usuário cadastrado.
+- Não exponha, reproduza, liste ou tente inferir links privados, dados de usuários, credenciais ou informações administrativas.
+- Não afirme que o Pack garante ganhos financeiros, vendas, clientes ou resultados.
+- Links de convite podem expirar, ser revogados ou os grupos podem atingir limite de participantes.
+- Conteúdos informativos não substituem as informações nativas do catálogo.
+
+## Perguntas frequentes
+- Para acessar grupos, faça login e selecione as categorias disponíveis.
+- Usuários cadastrados podem solicitar grupos por estado, cidade e nicho pela caixa de requisições.
+- Respeite as regras de cada comunidade; evite spam e divulgações não autorizadas.
+- WhatsApp pode ser usado em negócios, vendas e divulgação, mas resultados variam e não são garantidos.
+- Para obter cadastro, contate o suporte oficial indicado no site.
+
+## MCP
+Endpoint de descoberta, após implantação: `URL_DO_WEB_APP?mcp=1`.
+Ferramentas públicas read-only: `get_site_info`, `get_faq`. Não disponibilizam links privados, usuários ou credenciais.
+
+## Orientação
+O catálogo de grupos é o conteúdo central do Pack de Grupos. Os temas de divulgação orgânica, renda extra e marketing digital são contextuais/informativos. Este arquivo auxilia sistemas de IA a compreender o site; não garante indexação, citação ou recomendação.
