@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PACK DE GRUPOS - Mais de 50 mil Grupos de todo o Brasil</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://i.imgur.com/3o5OtZX.png">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .accordion-content { transition: max-height 0.3s ease-out, padding 0.3s ease; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- ÁREA DE AUTENTICAÇÃO / LOGIN NO TOPO -->
+    <div class="bg-slate-900 text-white px-4 py-3 sticky top-0 z-50 shadow-md border-b border-slate-700">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            
+            <div class="flex items-center gap-2">
+                <span id="auth-status-indicator" class="inline-block w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-300">
+                    Status: <span id="auth-status-text" class="text-rose-400 font-bold">Modo Visitante (Restrito)</span>
+                </span>
+            </div>
+
+            <!-- Formulário de Login com Botão de Visualizar Senha -->
+            <div id="auth-forms-container" class="flex flex-wrap items-center gap-2">
+                <input type="text" id="login-username" placeholder="E-mail ou Usuário" class="text-xs px-3 py-1.5 rounded bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 w-36 md:w-44">
+                
+                <div class="relative flex items-center">
+                    <input type="password" id="login-password" placeholder="Senha" class="text-xs px-3 py-1.5 pr-8 rounded bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 w-28 md:w-36">
+                    <button type="button" onclick="togglePasswordVisibility()" class="absolute right-2 text-slate-400 hover:text-white text-xs focus:outline-none" title="Mostrar/Ocultar Senha">👁️</button>
+                </div>
+
+                <button type="button" onclick="handleLogin()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-1.5 rounded transition shadow">
+                    Entrar
+                </button>
+            </div>
+
+            <!-- Dados da Sessão Ativa -->
+            <div id="auth-logout-container" class="hidden flex items-center gap-3">
+                <span id="welcome-user-text" class="text-xs text-slate-200 font-medium"></span>
+                <button type="button" onclick="handleLogout()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium px-3 py-1.5 rounded transition">
+                    Sair da Conta
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- BANNER SUPERIOR -->
+    <div class="w-full bg-slate-900 shadow-lg">
+        <div class="max-w-5xl mx-auto px-4 pt-4 pb-2">
+            <img src="https://i.imgur.com/vecSPDw.png" alt="Banner Pack de Grupos" class="w-full h-auto object-contain rounded-xl shadow-md block">
+        </div>
+        <div class="max-w-4xl mx-auto px-4 pb-8 text-center">
+            <span class="inline-block bg-blue-500/20 text-blue-300 text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full border border-blue-500/30 mb-3">
+                Atualizações Semanais!!
+            </span>
+            <h1 class="text-3xl md:text-5xl font-black text-white tracking-tight uppercase">
+                PACK DE GRUPOS<br>
+                <span class="text-emerald-400 normal-case font-bold block mt-2 text-xl md:text-3xl text-slate-100">
+                    Mais de 50 mil Grupos de todo o Brasil
+                </span>
+            </h1>
+            <p class="text-sm md:text-base text-slate-300 mt-4 max-w-2xl mx-auto font-normal leading-relaxed">
+                Os melhores grupos de todo o Brasil, capitais, interiores, nichos, EUA e muito mais.
+            </p>
+        </div>
+    </div>
+
+    <!-- AVISO DE ASSINATURA PAUSADA -->
+    <div id="hold-banner" class="hidden bg-amber-500 text-amber-950 font-medium px-4 py-3 text-center shadow-inner">
+        ⚠️ <strong>Assinatura em Pausa:</strong> Sua conta está temporariamente suspensa. A expansão de caixas e o acesso aos links estão bloqueados.
+    </div>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <div class="max-w-7xl mx-auto px-4 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8 flex-grow w-full">
+        
+        <!-- COLUNA DE CONTEÚDO -->
+        <div id="main-content-area" class="lg:col-span-2 space-y-6 transition-all duration-300">
+            
+            <!-- VÍDEO TUTORIAL -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="p-1.5 bg-rose-100 text-rose-600 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                    <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Vídeo Tutorial da Plataforma</h3>
+                </div>
+                <div class="w-full flex justify-center">
+                    <a href="https://www.youtube.com/watch?v=dPrbRs-Qj2U" target="_blank" rel="noopener noreferrer" style="position: relative; display: inline-block; width: 100%; max-width: 560px;">
+                      <img src="https://img.youtube.com/vi/dPrbRs-Qj2U/hqdefault.jpg" alt="Vídeo Tutorial" style="width: 100%; height: auto; border-radius: 12px; display: block;">
+                      <svg viewBox="0 0 68 48" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 68px; height: 48px; pointer-events: none;">
+                        <path d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,0.13,34,0,34,0S12.21,0.13,6.9,1.55 c-2.93,0.78-4.64,3.26-5.42,6.19C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z" fill="#f00" fill-opacity="0.8"></path>
+                        <path d="M 45,24 27,14 27,34" fill="#fff"></path>
+                      </svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- CONTEÚDO DINÂMICO DE BLOCOS -->
+            <div id="dynamic-blocks-container" class="space-y-6"></div>
+
+            <!-- CENTRAL DE TUTORIAIS -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <button type="button" onclick="toggleSimpleSection('content-tutorial-box', 'arrow-tutorial-box')" class="w-full px-5 py-4 flex items-center justify-between text-left font-bold text-slate-900 bg-slate-100 hover:bg-slate-200/70 transition">
+                    <div class="flex items-center gap-2">
+                        <span>📚 CENTRAL DE TUTORIAIS - DÚVIDAS FREQUENTES</span>
+                    </div>
+                    <svg id="arrow-tutorial-box" class="w-5 h-5 text-slate-500 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div id="content-tutorial-box" class="accordion-content max-h-0 overflow-hidden bg-white border-t border-slate-200 transition-all duration-300">
+                    <div class="p-5 space-y-5 text-sm leading-relaxed text-slate-700">
+                        <div>
+                            <h4 class="font-bold text-blue-700 mb-1">🔹 Como acesso aos grupos?</h4>
+                            <p>Basta efetuar login com seus dados de acesso na barra superior. Uma vez autenticado, clique na caixa do estado ou nicho desejado e clique diretamente no ícone ou link do grupo para ser redirecionado ao WhatsApp.</p>
+                        </div>
+                        <div class="border-t border-slate-100 pt-3">
+                            <h4 class="font-bold text-blue-700 mb-1">🔹 Como pedir mais grupos?</h4>
+                            <p>Se você for um usuário cadastrado, utilize o formulário de requisições logo abaixo nesta página. Informe o Estado, a Cidade e o Nicho de interesse para nossa equipe realizar o mapeamento.</p>
+                        </div>
+                        <div class="border-t border-slate-100 pt-3">
+                            <h4 class="font-bold text-blue-700 mb-1">🔹 Porque existem grupos bloqueados / expirados?</h4>
+                            <p>Os administradores originais dos grupos do WhatsApp podem revogar os links de convite a qualquer momento ou os grupos podem atingir o limite máximo de membros. Monitoramos e atualizamos a lista periodicamente.</p>
+                        </div>
+                        <div class="border-t border-slate-100 pt-3">
+                            <h4 class="font-bold text-blue-700 mb-1">🔹 Como cadastrar-se na plataforma?</h4>
+                            <p>O cadastro de novos clientes e emissão de credenciais de assinantes é realizado diretamente de forma centralizada pelo Administrador Geral do Pack. Entre em contato com o suporte oficial para adquirir seu plano.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REPORTAR LINK QUEBRADO / PEDIDOS -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <button type="button" onclick="toggleSimpleSection('content-report-box', 'arrow-report-box')" class="w-full px-5 py-4 flex items-center justify-between text-left font-bold text-white bg-slate-800 hover:bg-slate-700 transition">
+                    <div class="flex items-center gap-2">
+                        <span>🚨 CAIXA DE LINK QUEBRADO OU PEDIDO? CLIQUE AQUI</span>
+                    </div>
+                    <svg id="arrow-report-box" class="w-5 h-5 text-white transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div id="content-report-box" class="accordion-content max-h-0 overflow-hidden bg-slate-50 border-t border-slate-200 transition-all duration-300">
+                    <div class="p-5">
+                        <div id="report-guest-warning" class="bg-amber-100 border border-amber-300 text-amber-900 text-xs p-3 rounded-lg font-medium mb-4 flex items-center gap-2">
+                            🔒 <strong>Atenção Visitante:</strong> Esta caixa está visível para consulta, mas o preenchimento e envio de relatórios/pedidos é exclusivo para <strong>Usuários Cadastrados</strong>. Por favor, faça login.
+                        </div>
+
+                        <form id="report-broken-form" onsubmit="handleReportSubmit(event)" class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Seu Nome:</label>
+                                    <input type="text" id="report-name" placeholder="Insira qualquer nome de identificação" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">E-mail de Usuário Cadastrado:</label>
+                                    <input type="email" id="report-email" placeholder="Seu e-mail cadastrado no sistema" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nome do Estado (Obrigatório):</label>
+                                    <input type="text" id="report-state" placeholder="Ex: São Paulo, Rio de Janeiro..." class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Cidade (Obrigatório):</label>
+                                    <input type="text" id="report-city" placeholder="Ex: Campinas, Capital, Niterói..." class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nicho do Grupo (Opcional):</label>
+                                <input type="text" id="report-nicho" placeholder="Ex: Vendas, Empregos, Marketing, Agronegócio (Se aplicável)" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Descrição do Pedido ou Link Quebrado:</label>
+                                <textarea id="report-desc" rows="3" placeholder="Cole aqui o link quebrado ou detalhe qual tipo de grupo você gostaria que adicionássemos..." class="w-full text-xs p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"></textarea>
+                            </div>
+
+                            <button type="submit" class="w-full bg-slate-900 text-white font-bold text-xs py-2.5 rounded-lg hover:bg-slate-800 transition tracking-wider uppercase">
+                                Enviar Solicitação / Reporte
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IMAGEM ADICIONAL -->
+            <div class="w-full mt-6">
+                <img src="https://i.imgur.com/k1t4Hsk.png" alt="Banner Informativo" class="w-full h-auto object-contain rounded-xl shadow-sm border border-slate-200 block">
+            </div>
+
+        </div>
+
+        <!-- PAINEL LATERAL EXCLUSIVO DO ADM -->
+        <div id="sidebar-admin-area" class="lg:col-span-1 hidden">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 sticky top-20 space-y-5">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="p-2 bg-blue-50 text-blue-600 rounded-xl">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        </span>
+                        <h3 class="font-bold text-slate-900 text-lg">Gerenciamento ADM</h3>
+                    </div>
+                    <span class="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 font-semibold uppercase">Mestre</span>
+                </div>
+
+                <!-- 💾 BOTÃO EXCLUSIVO DE SALVAMENTO EM NUVEM -->
+                <div class="bg-emerald-600 p-4 rounded-xl shadow-md text-white text-center space-y-2 border border-emerald-500">
+                    <div class="flex items-center justify-center gap-2">
+                        <span class="text-xl">☁️</span>
+                        <h4 class="text-xs font-black uppercase tracking-wider">Sincronização de Nuvem</h4>
+                    </div>
+                    <p class="text-[11px] text-emerald-100 leading-tight">Salva as alterações na nuvem e atualiza o site instantaneamente.</p>
+                    <button type="button" onclick="syncToDatabase()" class="w-full bg-white hover:bg-slate-100 text-emerald-900 font-extrabold text-xs py-2.5 px-4 rounded-lg shadow transition transform active:scale-95 uppercase tracking-wide flex items-center justify-center gap-2">
+                        <span>💾</span> Salvar Tudo na Nuvem
+                    </button>
+                </div>
+
+                <!-- CRIAR CATEGORIA -->
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <h4 class="text-xs font-bold text-blue-900 uppercase tracking-wider mb-2">⭐ Nova Caixa Expansível de Links</h4>
+                    <p class="text-[11px] text-blue-800 mb-2">Crie uma caixa independente com as mesmas ferramentas de links gerais, sub-caixas, edição e exclusão.</p>
+                    <div class="flex gap-2">
+                        <input type="text" id="new-block-title" placeholder="Nome da nova caixa (ex.: Grupos VIP Black)" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <button type="button" onclick="createNewBlock()" class="bg-blue-600 text-white px-3 text-xs font-bold rounded-lg hover:bg-blue-700 transition">Criar</button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Cadastrar Novo Usuário</h4>
+                    <div class="space-y-2.5">
+                        <input type="text" id="new-candidate-name" placeholder="Nome Completo" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <input type="email" id="new-candidate-email" placeholder="E-mail Válido" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <input type="text" id="new-candidate-whatsapp" placeholder="WhatsApp (ex: 11999999999)" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <input type="password" id="new-candidate-password" placeholder="Senha" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <button type="button" onclick="addCandidate()" class="w-full bg-slate-900 text-white font-medium text-xs py-2 rounded-lg hover:bg-slate-800 transition">
+                            Cadastrar Usuário
+                        </button>
+                    </div>
+
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mt-5 mb-2">Usuários Cadastrados</h4>
+                    <div class="divide-y divide-slate-200 max-h-[180px] overflow-y-auto pr-1 bg-white rounded-lg border border-slate-200" id="candidates-list-container"></div>
+                </div>
+
+                <div class="text-xs bg-slate-900 text-slate-300 p-3 rounded-xl leading-relaxed">
+                    <p class="font-semibold text-amber-400 mb-1">🛡️ Requisitos Ativos:</p>
+                    <p>Use as setas 🔼 e 🔽 ao lado dos títulos para organizar o fluxo de caixas na tela. Clique no lápis ✏️ para renomear.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RODAPÉ -->
+    <footer class="w-full mt-2 overflow-hidden">
+        <img src="https://i.imgur.com/r36Ud6K.png" alt="Rodapé" class="w-full h-auto object-contain block">
+    </footer>
+
+    <!-- TOAST DE NOTIFICAÇÃO -->
+    <div id="custom-toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-3 border border-slate-700 max-w-sm">
+        <span id="toast-icon" class="text-amber-400">⚠️</span>
+        <p id="toast-message" class="text-sm font-medium"></p>
+    </div>
+
+    <!-- MODAL DE BLOQUEIO -->
+    <div id="lock-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 text-center shadow-2xl border border-slate-100">
+            <div class="w-16 h-16 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                🔒
+            </div>
+            <h3 class="text-xl font-bold text-slate-900">Acesso Restrito</h3>
+            <p class="text-slate-600 text-sm mt-2 leading-relaxed">
+                As caixas de grupos são protegidas por cadastro. Por favor, insira credenciais válidas na barra superior para liberar o acesso como "Usuário Cadastrado". Caso não tenha um cadastro peça pelo WhatsApp abaixo.
+            </p>
+            
+            <div class="mt-5 space-y-2">
+                <p class="text-xs font-extrabold text-slate-800 uppercase tracking-wide">Pedir meu acesso aos + 50 mil grupos</p>
+                <a href="https://wa.me/5567981242187?text=Olá%2C%20acabei%20de%20visitar%20seu%20site%20de%20Pack%20de%20grupos%2C%20quero%20pedir%20meu%20acesso." target="_blank" rel="noopener noreferrer" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 transition">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.124-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                    Pedir Acesso pelo WhatsApp
+                </a>
+            </div>
+
+            <div class="mt-5">
+                <button type="button" onclick="hideLockModal()" class="w-full bg-slate-900 text-white font-medium text-sm py-2 rounded-xl hover:bg-slate-800 transition">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sessionRole = 'guest'; 
+        let loggedUserLabel = '';
+        let loggedUserEmail = '';
+
+        let initialUsers = [
+            { id: 101, username: "Johnn Adm.", password: "JohnnLRS#1@2", name: "Johnn Lucas (ADM)", email: "admin@pack.com", whatsapp: "11999999999", role: "admin" },
+            { id: 102, username: "joao", password: "User@123", name: "João Assinante", email: "joao@email.com", whatsapp: "11988888888", role: "active" }
+        ];
+
+        let initialBlocksOrder = [
+            { id: "AC", name: "Acre (AC)", type: "state", color: "blue" },
+            { id: "AL", name: "Alagoas (AL)", type: "state", color: "blue" },
+            { id: "AP", name: "Amapá (AP)", type: "state", color: "blue" },
+            { id: "AM", name: "Amazonas (AM)", type: "state", color: "blue" },
+            { id: "BA", name: "Bahia (BA)", type: "state", color: "blue" },
+            { id: "CE", name: "Ceará (CE)", type: "state", color: "blue" },
+            { id: "DF", name: "Distrito Federal (DF)", type: "state", color: "blue" },
+            { id: "ES", name: "Espírito Santo (ES)", type: "state", color: "blue" },
+            { id: "GO", name: "Goiás (GO)", type: "state", color: "blue" },
+            { id: "MA", name: "Maranhão (MA)", type: "state", color: "blue" },
+            { id: "MT", name: "Mato Grosso (MT)", type: "state", color: "blue" },
+            { id: "MS", name: "Mato Grosso do Sul (MS)", type: "state", color: "blue" },
+            { id: "MG", name: "Minas Gerais (MG)", type: "state", color: "blue" },
+            { id: "PA", name: "Pará (PA)", type: "state", color: "blue" },
+            { id: "PB", name: "Paraíba (PB)", type: "state", color: "blue" },
+            { id: "PR", name: "Paraná (PR)", type: "state", color: "blue" },
+            { id: "PE", name: "Pernambuco (PE)", type: "state", color: "blue" },
+            { id: "PI", name: "Piauí (PI)", type: "state", color: "blue" },
+            { id: "RJ", name: "Rio de Janeiro (RJ)", type: "state", color: "blue" },
+            { id: "RN", name: "Rio Grande do Norte (RN)", type: "state", color: "blue" },
+            { id: "RS", name: "Rio Grande do Sul (RS)", type: "state", color: "blue" },
+            { id: "RO", name: "Rondônia (RO)", type: "state", color: "blue" },
+            { id: "RR", name: "Roraima (RR)", type: "state", color: "blue" },
+            { id: "SC", name: "Santa Catarina (SC)", type: "state", color: "blue" },
+            { id: "SP", name: "São Paulo (SP)", type: "state", color: "blue" },
+            { id: "SE", name: "Sergipe (SE)", type: "state", color: "blue" },
+            { id: "TO", name: "Tocantins (TO)", type: "state", color: "blue" },
+            { id: "nichos", name: "Lista Geral de Nichos de Atuação", type: "nicho", color: "purple" },
+            { id: "eua", name: "Lista Geral de Cidades e Estados nos EUA", type: "eua", color: "emerald" }
+        ];
+
+        let initialLinks = {};
+        initialBlocksOrder.forEach(b => {
+            initialLinks[b.id] = {
+                stateItems: [{ type: 'link', label: `Grupo ${b.name}`, url: 'https://whatsapp.com' }],
+                cities: []
+            };
+        });
+
+        let systemUsers = initialUsers;
+        let groupLinks = initialLinks;
+        let blocksOrder = initialBlocksOrder;
+
+        const API_URL = 'https://script.google.com/macros/s/AKfycbziNpif-VLcbERshq1DbxVc093Yn8czY1mENG8egcRhBGK2dX0N5wMDPV49DDM-F8Oe5A/exec';
+
+        window.onload = async function() {
+            await fetchCloudData();
+        };
+
+        let cloudRevision = 0;
+        let saveQueue = Promise.resolve();
+
+        async function fetchCloudData() {
+            try {
+                const response = await fetch(API_URL, { cache: 'no-store' });
+                if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
+
+                const result = await response.json();
+                if (!result || result.status !== "success") {
+                    throw new Error(result?.message || "Resposta inválida da nuvem.");
+                }
+
+                cloudRevision = Number(result.revision || 0);
+
+                // Quando há um banco salvo, a nuvem é a fonte oficial, inclusive para listas vazias.
+                if (result.hasData === true) {
+                    systemUsers = Array.isArray(result.users) ? result.users : [];
+                    blocksOrder = Array.isArray(result.blocks) ? result.blocks : [];
+                    groupLinks = (result.links && typeof result.links === 'object' && !Array.isArray(result.links))
+                        ? result.links
+                        : {};
+                } else {
+                    // Compatibilidade com a primeira inicialização/versão antiga da planilha.
+                    if (Array.isArray(result.users) && result.users.length) systemUsers = result.users;
+                    if (Array.isArray(result.blocks) && result.blocks.length) blocksOrder = result.blocks;
+                    if (result.links && typeof result.links === 'object') {
+                        groupLinks = result.links;
+                    }
+                }
+
+                blocksOrder.forEach(block => {
+                    if (!groupLinks[block.id]) groupLinks[block.id] = { stateItems: [], cities: [] };
+                    if (!Array.isArray(groupLinks[block.id].stateItems)) groupLinks[block.id].stateItems = [];
+                    if (!Array.isArray(groupLinks[block.id].cities)) groupLinks[block.id].cities = [];
+                });
+
+                renderDynamicBlocks();
+                renderAdminUserList();
+                applyStrictPermissionsUI();
+            } catch (error) {
+                console.error("Erro ao carregar dados da nuvem:", error);
+                blocksOrder.forEach(block => {
+                    if (!groupLinks[block.id]) groupLinks[block.id] = { stateItems: [], cities: [] };
+                });
+                renderDynamicBlocks();
+                renderAdminUserList();
+                applyStrictPermissionsUI();
+                showToast("Não foi possível atualizar os dados da nuvem.", "⚠️");
+            }
+        }
+
+        function togglePasswordVisibility() {
+            const passInput = document.getElementById('login-password');
+            passInput.type = passInput.type === 'password' ? 'text' : 'password';
+        }
+
+        async function syncToDatabase() {
+            if (sessionRole !== 'admin') {
+                showToast("Apenas o Administrador pode salvar na nuvem.", "❌");
+                return false;
+            }
+
+            const saveTask = saveQueue.then(async () => {
+                showToast("Salvando alterações na nuvem...", "⏳");
+                // A fotografia é criada dentro da fila para sempre usar a revisão mais recente.
+                const snapshot = JSON.stringify({
+                    action: 'save_all',
+                    revision: cloudRevision,
+                    users: systemUsers,
+                    blocks: blocksOrder,
+                    links: groupLinks
+                });
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: snapshot
+                });
+
+                if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
+                const result = await response.json();
+                if (!result || result.status !== 'success') {
+                    if (result?.status === 'conflict') {
+                        throw new Error("Os dados foram alterados em outra sessão. Atualize a página antes de salvar novamente.");
+                    }
+                    throw new Error(result?.message || "O servidor não confirmou o salvamento.");
+                }
+
+                cloudRevision = Number(result.revision || (cloudRevision + 1));
+                showToast("Dados salvos e confirmados na nuvem!", "🚀");
+                return true;
+            });
+
+            // Mantém a fila utilizável mesmo se uma gravação falhar.
+            saveQueue = saveTask.catch(error => {
+                console.error("Erro ao sincronizar com o banco de dados:", error);
+                showToast("Falha ao salvar: " + error.message, "⚠️");
+            });
+
+            try {
+                return await saveTask;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function handleLogin() {
+            const userInp = document.getElementById('login-username').value.trim().toLowerCase();
+            const passInp = document.getElementById('login-password').value.trim();
+
+            if(!userInp || !passInp) {
+                showToast("Digite o usuário e a senha.");
+                return;
+            }
+
+            const foundUser = systemUsers.find(u => {
+                const uName = (u.username || '').toLowerCase().trim();
+                const uEmail = (u.email || '').toLowerCase().trim();
+                const uPass = String(u.password || '').trim();
+
+                const matchUser = uName === userInp || 
+                                  uEmail === userInp ||
+                                  (u.role === 'admin' && ['admin', 'johnn adm', 'johnn adm.', 'johnn'].includes(userInp));
+                
+                const matchPass = uPass === passInp;
+                return matchUser && matchPass;
+            });
+
+            if(!foundUser) {
+                showToast("Usuário ou senha incorretos.", "❌");
+                return;
+            }
+
+            sessionRole = foundUser.role;
+            loggedUserLabel = foundUser.name;
+            loggedUserEmail = foundUser.email || foundUser.username || '';
+
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+
+            applyStrictPermissionsUI();
+            showToast(`Sessão iniciada como ${loggedUserLabel}!`, "🔑");
+        }
+
+        function handleLogout() {
+            sessionRole = 'guest';
+            loggedUserLabel = '';
+            loggedUserEmail = '';
+            applyStrictPermissionsUI();
+            showToast("Logout efetuado com sucesso.", "ℹ️");
+        }
+
+        function applyStrictPermissionsUI() {
+            const mainArea = document.getElementById('main-content-area');
+            const sidebarAdmin = document.getElementById('sidebar-admin-area');
+            const holdBanner = document.getElementById('hold-banner');
+            const authForms = document.getElementById('auth-forms-container');
+            const authLogout = document.getElementById('auth-logout-container');
+            const statusIndicator = document.getElementById('auth-status-indicator');
+            const statusText = document.getElementById('auth-status-text');
+            const guestWarning = document.getElementById('report-guest-warning');
+
+            if (sessionRole === 'guest') {
+                authForms.classList.remove('hidden');
+                authLogout.classList.add('hidden');
+                statusIndicator.className = "inline-block w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse";
+                statusText.innerText = "Modo Visitante (Bloqueado)";
+                statusText.className = "text-rose-400 font-bold";
+                if(guestWarning) guestWarning.classList.remove('hidden');
+            } else {
+                authForms.classList.add('hidden');
+                authLogout.classList.remove('hidden');
+                if(guestWarning) guestWarning.classList.add('hidden');
+                
+                if (sessionRole === 'admin') {
+                    statusIndicator.className = "inline-block w-2.5 h-2.5 rounded-full bg-blue-500 shadow";
+                    statusText.innerText = "Modo Administrador (Total)";
+                    statusText.className = "text-blue-400 font-bold";
+                    document.getElementById('welcome-user-text').innerText = `🛠️ ADM: ${loggedUserLabel}`;
+                } else if (sessionRole === 'active') {
+                    statusIndicator.className = "inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 shadow";
+                    statusText.innerText = "Usuário Cadastrado (Liberado)";
+                    statusText.className = "text-emerald-400 font-bold";
+                    document.getElementById('welcome-user-text').innerText = `👤 Assinante: ${loggedUserLabel}`;
+                } else if (sessionRole === 'on_hold') {
+                    statusIndicator.className = "inline-block w-2.5 h-2.5 rounded-full bg-amber-500 animate-bounce";
+                    statusText.innerText = "Assinatura Pausada (Bloqueado)";
+                    statusText.className = "text-amber-400 font-bold";
+                    document.getElementById('welcome-user-text').innerText = `⏳ Suspenso: ${loggedUserLabel}`;
+                }
+            }
+
+            if (sessionRole === 'admin') {
+                sidebarAdmin.classList.remove('hidden');
+                mainArea.className = "lg:col-span-2 space-y-6 transition-all duration-300";
+            } else {
+                sidebarAdmin.classList.add('hidden');
+                mainArea.className = "lg:col-span-3 space-y-6 transition-all duration-300";
+            }
+
+            if (sessionRole === 'on_hold') {
+                mainArea.classList.add('pointer-events-none', 'opacity-50', 'select-none');
+                holdBanner.classList.remove('hidden');
+            } else {
+                mainArea.classList.remove('pointer-events-none', 'opacity-50', 'select-none');
+                holdBanner.classList.add('hidden');
+            }
+            renderDynamicBlocks();
+        }
+
+        function toggleSimpleSection(contentId, arrowId) {
+            const content = document.getElementById(contentId);
+            const arrow = document.getElementById(arrowId);
+            
+            if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+                content.style.maxHeight = null;
+                arrow.classList.remove('rotate-180');
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+                arrow.classList.add('rotate-180');
+            }
+        }
+
+        async function handleReportSubmit(e) {
+            e.preventDefault();
+
+            if(sessionRole === 'guest') {
+                showToast("Acesso Negado! Apenas usuários cadastrados e logados podem enviar.", "❌");
+                showLockModal();
+                return;
+            }
+
+            const name = document.getElementById('report-name').value.trim();
+            const email = document.getElementById('report-email').value.trim();
+            const state = document.getElementById('report-state').value.trim();
+            const city = document.getElementById('report-city').value.trim();
+            const nicho = document.getElementById('report-nicho').value.trim();
+            const desc = document.getElementById('report-desc').value.trim();
+
+            if(!name || !email || !state || !city) {
+                showToast("Por favor, preencha todos os campos obrigatórios.", "⚠️");
+                return;
+            }
+            
+            showToast("Enviando solicitação...", "⏳");
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ name, email, state, city, nicho, desc, submittedBy: `${loggedUserLabel} (${loggedUserEmail})` })
+                });
+
+                showToast("Solicitação enviada e salva na planilha com sucesso!", "🚀");
+                
+                document.getElementById('report-name').value = '';
+                document.getElementById('report-email').value = '';
+                document.getElementById('report-state').value = '';
+                document.getElementById('report-city').value = '';
+                document.getElementById('report-nicho').value = '';
+                document.getElementById('report-desc').value = '';
+            } catch (error) {
+                showToast("Erro ao conectar com a planilha.", "❌");
+            }
+        }
+
+        function toggleAccordion(id) {
+            if (sessionRole === 'guest') {
+                showLockModal();
+                return;
+            }
+            if (sessionRole === 'on_hold') {
+                showToast("Sua assinatura está pausada.");
+                return;
+            }
+
+            const content = document.getElementById(`content-${id}`);
+            const arrow = document.getElementById(`arrow-${id}`);
+            
+            if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+                content.style.maxHeight = null;
+                arrow.classList.remove('rotate-180');
+            } else {
+                content.style.maxHeight = content.scrollHeight + 3000 + "px";
+                arrow.classList.add('rotate-180');
+                
+                setTimeout(() => {
+                    if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    }
+                }, 120);
+            }
+        }
+
+        function toggleCityAccordion(cityDivId) {
+            const content = document.getElementById(`city-content-${cityDivId}`);
+            const arrow = document.getElementById(`city-arrow-${cityDivId}`);
+            const parentBlockId = cityDivId.split('_')[0];
+
+            if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+                content.style.maxHeight = null;
+                arrow.classList.remove('rotate-180');
+            } else {
+                content.style.maxHeight = content.scrollHeight + 1500 + "px";
+                arrow.classList.add('rotate-180');
+                
+                setTimeout(() => {
+                    if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    }
+                }, 120);
+            }
+
+            updateAccordionHeight(parentBlockId);
+        }
+
+        function updateAccordionHeight(boxId) {
+            const content = document.getElementById(`content-${boxId}`);
+            if (content && content.style.maxHeight && content.style.maxHeight !== '0px') {
+                content.style.maxHeight = content.scrollHeight + 3000 + "px";
+                setTimeout(() => {
+                    if (content && content.style.maxHeight && content.style.maxHeight !== '0px') {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    }
+                }, 120);
+            }
+        }
+
+        function renderDynamicBlocks() {
+            const scrollAtual = window.scrollY;
+            const blocosAbertos = Array.from(document.querySelectorAll('.accordion-content'))
+                .filter(el => el.style.maxHeight && el.style.maxHeight !== '0px')
+                .map(el => el.id);
+
+            const container = document.getElementById('dynamic-blocks-container');
+            if(!container) return;
+            container.innerHTML = '';
+
+            let seenBlockIds = new Set();
+            let uniqueBlocks = blocksOrder.filter(block => {
+                if (seenBlockIds.has(block.id)) return false;
+                seenBlockIds.add(block.id);
+                return true;
+            });
+
+            uniqueBlocks.forEach((block, index) => {
+                if (!groupLinks[block.id]) {
+                    groupLinks[block.id] = { stateItems: [], cities: [] };
+                }
+
+                const div = document.createElement('div');
+                div.className = "bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden";
+                
+                const header = document.createElement('div');
+                header.className = "w-full px-5 py-4 flex items-center justify-between text-left font-semibold text-slate-800 bg-white hover:bg-slate-50/50 transition";
+                
+                let colorBadge = "bg-blue-500";
+                if(block.color === 'purple') colorBadge = "bg-purple-500";
+                if(block.color === 'emerald') colorBadge = "bg-emerald-500";
+
+                const blockData = groupLinks[block.id];
+                const totalStateLinks = (blockData.stateItems || []).filter(i => i.type === 'link').length;
+                const totalCityLinks = (blockData.cities || []).reduce((acc, c) => acc + (c.items || []).filter(i => i.type === 'link').length, 0);
+                const totalLinksCount = totalStateLinks + totalCityLinks;
+
+                let orderingControls = '';
+                if(sessionRole === 'admin') {
+                    orderingControls = `
+                        <div class="flex items-center gap-1.5 ml-2 mr-2 shrink-0 select-none">
+                            <button type="button" onclick="moveBlock(${index}, -1); event.stopPropagation();" class="p-1 hover:bg-slate-200 rounded text-xs transition" title="Mover para cima">🔼</button>
+                            <button type="button" onclick="moveBlock(${index}, 1); event.stopPropagation();" class="p-1 hover:bg-slate-200 rounded text-xs transition" title="Mover para baixo">🔽</button>
+                            <button type="button" onclick="editBlockName('${block.id}'); event.stopPropagation();" class="p-1 hover:bg-blue-100 rounded text-xs text-blue-600 transition" title="Editar Nome da Categoria">✏️</button>
+                            ${block.type === 'custom' ? `<button type="button" onclick="deleteCustomBlock('${block.id}', ${index}); event.stopPropagation();" class="p-1 hover:bg-rose-100 rounded text-xs text-rose-600 transition" title="Excluir Categoria">🗑️</button>` : ''}
+                        </div>
+                    `;
+                }
+
+                header.innerHTML = `
+                    <div class="flex items-center gap-3 min-w-0 cursor-pointer w-full" onclick="toggleAccordion('${block.id}')">
+                        <span class="w-2 h-2 rounded-full ${colorBadge} shrink-0"></span>
+                        <span class="truncate text-slate-900 font-bold" id="title-text-${block.id}">${block.name}</span>
+                        <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-normal shrink-0">
+                            ${totalLinksCount} links
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        ${orderingControls}
+                        <svg id="arrow-${block.id}" onclick="toggleAccordion('${block.id}')" class="w-5 h-5 text-slate-400 cursor-pointer transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </div>
+                `;
+
+                const contentDiv = document.createElement('div');
+                contentDiv.id = `content-${block.id}`;
+                contentDiv.className = "accordion-content max-h-0 overflow-hidden bg-slate-50 border-t border-transparent transition-all duration-300";
+                
+                const innerContainer = document.createElement('div');
+                innerContainer.className = "p-5 space-y-6";
+
+                // --- 1. LINKS GERAIS DO ESTADO ---
+                const stateLinksSection = document.createElement('div');
+                stateLinksSection.className = "space-y-3";
+                stateLinksSection.innerHTML = `<h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">📌 Links Gerais do Estado</h4>`;
+                
+                const stateList = document.createElement('div');
+                stateList.className = "grid grid-cols-1 sm:grid-cols-2 gap-3";
+                
+                if(!blockData.stateItems || blockData.stateItems.length === 0) {
+                    stateList.innerHTML = `<p class="text-sm text-slate-400 italic col-span-2">Nenhum link geral cadastrado.</p>`;
+                } else {
+                    let linkCounter = 1;
+                    const stateMarkup = [];
+                    blockData.stateItems.forEach((item, itemIdx) => {
+                        if (item.type === 'title') {
+                            stateMarkup.push(`
+                                <div class="col-span-1 sm:col-span-2 mt-2 mb-1 text-sm font-bold text-slate-900 border-b border-slate-300 pb-1 flex items-center justify-between min-w-0">
+                                    <span class="truncate">📌 ${item.text}</span>
+                                    ${sessionRole === 'admin' ? `<button type="button" onclick="deleteStateItem('${block.id}', ${itemIdx})" class="text-slate-400 hover:text-rose-600 text-xs p-1 shrink-0 ml-2" title="Excluir título">❌</button>` : ''}
+                                </div>
+                            `);
+                        } else {
+                            const currentNum = linkCounter++;
+                            stateMarkup.push(`
+                                <div class="flex items-center justify-between bg-white border border-slate-200 rounded-xl p-3 shadow-sm hover:border-slate-300 transition min-w-0">
+                                    <a href="${item.url}" target="_blank" class="text-sm font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-2 truncate min-w-0 flex-1">
+                                        <span class="text-xs font-bold text-slate-400 shrink-0">${currentNum}.</span> 🔗 <span class="truncate">${item.label || item.url}</span>
+                                    </a>
+                                    ${sessionRole === 'admin' ? `<div class="flex shrink-0 ml-2 gap-1"><button type="button" onclick="editStateItem('${block.id}', ${itemIdx})" class="text-blue-500 hover:text-blue-700 p-1 text-xs" title="Editar link">✏️</button><button type="button" onclick="deleteStateItem('${block.id}', ${itemIdx})" class="text-slate-400 hover:text-rose-600 p-1 text-xs transition" title="Excluir link">❌</button></div>` : ''}
+                                </div>
+                            `);
+                        }
+                    });
+                    stateList.innerHTML = stateMarkup.join('');
+                }
+                stateLinksSection.appendChild(stateList);
+                innerContainer.appendChild(stateLinksSection);
+
+                // --- 2. SUB-CAIXAS DE CIDADES ---
+                const citiesSection = document.createElement('div');
+                citiesSection.className = "space-y-4 pt-4 border-t border-slate-200";
+                citiesSection.innerHTML = `<h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">🏙️ Cidades / Sub-caixas</h4>`;
+
+                const citiesContainer = document.createElement('div');
+                citiesContainer.className = "space-y-3";
+
+                if (!blockData.cities || blockData.cities.length === 0) {
+                    citiesContainer.innerHTML = `<p class="text-sm text-slate-400 italic">Nenhuma sub-caixa de cidade criada.</p>`;
+                } else {
+                    blockData.cities.forEach((city, cityIdx) => {
+                        const cityDiv = document.createElement('div');
+                        cityDiv.className = "bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs";
+
+                        const cityHeader = document.createElement('div');
+                        cityHeader.className = "px-4 py-3 bg-slate-100 flex items-center justify-between cursor-pointer hover:bg-slate-200/60 transition";
+                        cityHeader.setAttribute('onclick', `toggleCityAccordion('${city.id}')`);
+
+                        const cityLinksCount = (city.items || []).filter(i => i.type === 'link').length;
+                        let cityAdminControls = '';
+                        if (sessionRole === 'admin') {
+                            cityAdminControls = `
+                                <div class="flex items-center gap-1.5 ml-2 shrink-0">
+                                    <button type="button" onclick="editCityName('${block.id}', ${cityIdx}); event.stopPropagation();" class="p-1 hover:bg-blue-200 rounded text-xs text-blue-700 transition" title="Renomear Cidade">✏️</button>
+                                    <button type="button" onclick="deleteCity('${block.id}', ${cityIdx}); event.stopPropagation();" class="p-1 hover:bg-rose-200 rounded text-xs text-rose-700 transition" title="Excluir Cidade">🗑️</button>
+                                </div>
+                            `;
+                        }
+
+                        cityHeader.innerHTML = `
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="text-sm font-bold text-slate-800 truncate">📍 ${city.name}</span>
+                                <span class="text-[11px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-medium shrink-0">${cityLinksCount} links</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                ${cityAdminControls}
+                                <svg id="city-arrow-${city.id}" class="w-4 h-4 text-slate-500 transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </div>
+                        `;
+
+                        const cityContent = document.createElement('div');
+                        cityContent.id = `city-content-${city.id}`;
+                        cityContent.className = "accordion-content max-h-0 overflow-hidden bg-white border-t border-slate-100 transition-all duration-300";
+
+                        const cityInner = document.createElement('div');
+                        cityInner.className = "p-4 space-y-4";
+
+                        const cityItemsGrid = document.createElement('div');
+                        cityItemsGrid.className = "grid grid-cols-1 sm:grid-cols-2 gap-2.5";
+
+                        if (!city.items || city.items.length === 0) {
+                            cityItemsGrid.innerHTML = `<p class="text-xs text-slate-400 italic col-span-2">Nenhum item cadastrado nesta cidade.</p>`;
+                        } else {
+                            let cLinkCounter = 1;
+                            const cityItemMarkup = [];
+                            city.items.forEach((cItem, cItemIdx) => {
+                                if (cItem.type === 'title') {
+                                    cityItemMarkup.push(`
+                                        <div class="col-span-1 sm:col-span-2 mt-1 mb-1 text-xs font-bold text-slate-900 border-b border-slate-200 pb-0.5 flex items-center justify-between min-w-0">
+                                            <span class="truncate">📌 ${cItem.text}</span>
+                                            ${sessionRole === 'admin' ? `<button type="button" onclick="deleteCityItem('${block.id}', ${cityIdx}, ${cItemIdx})" class="text-slate-400 hover:text-rose-600 text-xs p-0.5 shrink-0 ml-2">❌</button>` : ''}
+                                        </div>
+                                    `);
+                                } else {
+                                    const cNum = cLinkCounter++;
+                                    cityItemMarkup.push(`
+                                        <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg p-2.5 shadow-2xs hover:border-slate-300 transition min-w-0">
+                                            <a href="${cItem.url}" target="_blank" class="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-2 truncate min-w-0 flex-1">
+                                                <span class="text-[11px] font-bold text-slate-400 shrink-0">${cNum}.</span> 🔗 <span class="truncate">${cItem.label || cItem.url}</span>
+                                            </a>
+                                            ${sessionRole === 'admin' ? `<div class="flex shrink-0 ml-2 gap-1"><button type="button" onclick="editCityItem('${block.id}', ${cityIdx}, ${cItemIdx})" class="text-blue-500 hover:text-blue-700 p-1 text-xs" title="Editar link">✏️</button><button type="button" onclick="deleteCityItem('${block.id}', ${cityIdx}, ${cItemIdx})" class="text-slate-400 hover:text-rose-600 p-1 text-xs transition" title="Excluir">❌</button></div>` : ''}
+                                        </div>
+                                    `);
+                                }
+                            });
+                            cityItemsGrid.innerHTML = cityItemMarkup.join('');
+                        }
+                        cityInner.appendChild(cityItemsGrid);
+
+                        if (sessionRole === 'admin') {
+                            const cityForm = document.createElement('div');
+                            cityForm.className = "mt-3 pt-3 border-t border-slate-200 bg-slate-50 p-3 rounded-lg space-y-3";
+                            cityForm.innerHTML = `
+                                <p class="text-[11px] font-bold text-slate-700 uppercase">Adicionar na Cidade (${city.name})</p>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                    <select id="city-type-${city.id}" class="text-xs px-2 py-1.5 border border-slate-200 rounded bg-white focus:outline-none">
+                                        <option value="link">Link de Grupo</option>
+                                        <option value="title">Título / Seção</option>
+                                    </select>
+                                    <input type="text" id="city-label-${city.id}" placeholder="Nome ou Título" class="text-xs px-2.5 py-1.5 border border-slate-200 rounded bg-white focus:outline-none sm:col-span-2">
+                                </div>
+                                <input type="text" id="city-url-${city.id}" placeholder="URL (https://...)" class="text-xs px-2.5 py-1.5 border border-slate-200 rounded bg-white focus:outline-none w-full">
+                                <button type="button" onclick="addCityItem('${block.id}', ${cityIdx})" class="w-full bg-blue-600 text-white font-medium text-xs py-1.5 rounded hover:bg-blue-700 transition">
+                                    Inserir Item na Cidade
+                                </button>
+                                
+                                <div class="mt-2 pt-2 border-t border-slate-200 space-y-1.5">
+                                    <p class="text-[10px] font-bold text-slate-600 uppercase">Colar em Lote na Cidade</p>
+                                    <textarea id="city-bulk-${city.id}" rows="2" placeholder="Cole vários links aqui..." class="w-full text-xs p-2 border border-slate-200 rounded bg-white focus:outline-none font-mono"></textarea>
+                                    <button type="button" onclick="addCityBulk('${block.id}', ${cityIdx})" class="w-full bg-emerald-600 text-white font-medium text-xs py-1.5 rounded hover:bg-emerald-700 transition">
+                                        Processar Lote na Cidade
+                                    </button>
+                                </div>
+                            `;
+                            cityInner.appendChild(cityForm);
+                        }
+
+                        cityContent.appendChild(cityInner);
+                        cityDiv.appendChild(cityHeader);
+                        cityDiv.appendChild(cityContent);
+                        citiesContainer.appendChild(cityDiv);
+                    });
+                }
+                citiesSection.appendChild(citiesContainer);
+
+                if (sessionRole === 'admin') {
+                    const newCityBox = document.createElement('div');
+                    newCityBox.className = "mt-4 p-3 bg-purple-50 rounded-xl border border-purple-100 space-y-2";
+                    newCityBox.innerHTML = `
+                        <p class="text-xs font-bold text-purple-950 uppercase">🏙️ Criar Nova Sub-caixa de Cidade</p>
+                        <div class="flex gap-2">
+                            <input type="text" id="new-city-name-${block.id}" placeholder="Nome da Cidade..." class="w-full text-xs px-3 py-1.5 border border-slate-200 rounded bg-white focus:outline-none">
+                            <button type="button" onclick="addNewCity('${block.id}')" class="bg-purple-600 text-white px-3 text-xs font-bold rounded hover:bg-purple-700 transition shrink-0">Criar Sub-caixa</button>
+                        </div>
+                    `;
+                    citiesSection.appendChild(newCityBox);
+                }
+
+                innerContainer.appendChild(citiesSection);
+
+                // --- 3. FORMULÁRIO DE GERENCIAMENTO GERAL DO ESTADO ---
+                if (sessionRole === 'admin') {
+                    const adminForm = document.createElement('div');
+                    adminForm.className = "mt-6 pt-4 border-t border-slate-300 bg-blue-50/50 p-4 rounded-xl border border-blue-100 space-y-4";
+                    adminForm.innerHTML = `
+                        <p class="text-xs font-bold text-blue-900 uppercase tracking-wider">⚙️ Adicionar Links Gerais no Estado (${block.name})</p>
+                        <div class="bg-white p-3 rounded-lg border border-slate-200 space-y-2">
+                            <p class="text-[11px] font-bold text-slate-600 uppercase">Item Individual Geral</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                <select id="input-type-${block.id}" class="text-xs px-2 py-1.5 border border-slate-200 rounded bg-white focus:outline-none">
+                                    <option value="link">Link de Grupo</option>
+                                    <option value="title">Título / Seção</option>
+                                </select>
+                                <input type="text" id="input-label-${block.id}" placeholder="Nome ou Texto do Título" class="text-xs px-2.5 py-1.5 border border-slate-200 rounded bg-white focus:outline-none sm:col-span-2">
+                            </div>
+                            <input type="text" id="input-url-${block.id}" placeholder="URL (https://...)" class="text-xs px-2.5 py-1.5 border border-slate-200 rounded bg-white focus:outline-none w-full">
+                            <button type="button" onclick="addStateSingleItem('${block.id}')" class="w-full bg-blue-600 text-white font-medium text-xs py-1.5 rounded hover:bg-blue-700 transition">
+                                Inserir Link Geral
+                            </button>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border border-slate-200 space-y-2">
+                            <p class="text-[11px] font-bold text-slate-600 uppercase">Colar Lote Geral (Estado)</p>
+                            <textarea id="bulk-textarea-${block.id}" rows="3" placeholder="Cole aqui o texto em bloco..." class="w-full text-xs p-2.5 border border-slate-200 rounded bg-white focus:outline-none font-mono"></textarea>
+                            <button type="button" onclick="addStateBulkItems('${block.id}')" class="w-full bg-emerald-600 text-white font-medium text-xs py-1.5 rounded hover:bg-emerald-700 transition">
+                                Processar Bloco Geral
+                            </button>
+                        </div>
+                    `;
+                    innerContainer.appendChild(adminForm);
+                }
+
+                contentDiv.appendChild(innerContainer);
+                div.appendChild(header);
+                div.appendChild(contentDiv);
+                container.appendChild(div);
+            });
+
+            setTimeout(() => {
+                blocosAbertos.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.style.maxHeight = el.scrollHeight + "px";
+                        const baseId = id.replace('content-', '').replace('city-content-', '');
+                        const arrow = document.getElementById(`arrow-${baseId}`) || document.getElementById(`city-arrow-${baseId}`);
+                        if (arrow) arrow.classList.add('rotate-180');
+                    }
+                });
+                window.scrollTo(0, scrollAtual);
+            }, 0);
+        }
+
+        function editBlockName(id) {
+            if (sessionRole !== 'admin') return;
+            const targetBlock = blocksOrder.find(b => b.id === id);
+            if (!targetBlock) return;
+
+            const newName = prompt(`Digite o novo nome para a categoria "${targetBlock.name}":`, targetBlock.name);
+            if (newName === null) return;
+            
+            const trimmedName = newName.trim();
+            if (!trimmedName) return;
+
+            targetBlock.name = trimmedName;
+            syncToDatabase();
+            renderDynamicBlocks();
+            showToast("Categoria renomeada!", "✏️");
+        }
+
+        function moveBlock(currentIndex, direction) {
+            if (sessionRole !== 'admin') return;
+            const targetIndex = currentIndex + direction;
+            if (targetIndex < 0 || targetIndex >= blocksOrder.length) return;
+
+            const temp = blocksOrder[currentIndex];
+            blocksOrder[currentIndex] = blocksOrder[targetIndex];
+            blocksOrder[targetIndex] = temp;
+
+            syncToDatabase();
+            renderDynamicBlocks();
+            showToast("Ordem atualizada!", "🔄");
+        }
+
+        function createNewBlock() {
+            if (sessionRole !== 'admin') return;
+            const titleInput = document.getElementById('new-block-title');
+            const name = titleInput.value.trim();
+
+            if(!name) return;
+
+            const newId = "CUSTOM_" + Date.now();
+            blocksOrder.push({ id: newId, name: name, type: "custom", color: "purple" });
+            groupLinks[newId] = { stateItems: [], cities: [] };
+
+            syncToDatabase();
+            titleInput.value = '';
+            renderDynamicBlocks();
+            showToast(`Bloco "${name}" criado!`, "⭐");
+        }
+
+        function deleteCustomBlock(id, index) {
+            if (sessionRole !== 'admin') return;
+            if(!confirm("Tem certeza que deseja apagar esta categoria?")) return;
+
+            blocksOrder.splice(index, 1);
+            delete groupLinks[id];
+
+            syncToDatabase();
+            renderDynamicBlocks();
+            showToast("Categoria removida.");
+        }
+
+        function addStateSingleItem(boxId) {
+            if (sessionRole !== 'admin') return;
+            const type = document.getElementById(`input-type-${boxId}`).value;
+            const labelInput = document.getElementById(`input-label-${boxId}`).value.trim();
+            const urlInput = document.getElementById(`input-url-${boxId}`).value.trim();
+
+            if (!labelInput) return;
+            if(!groupLinks[boxId]) groupLinks[boxId] = { stateItems: [], cities: [] };
+            if(!groupLinks[boxId].stateItems) groupLinks[boxId].stateItems = [];
+
+            if (type === 'title') {
+                groupLinks[boxId].stateItems.push({ type: 'title', text: labelInput });
+            } else {
+                if (!urlInput) return;
+                let finalUrl = urlInput.startsWith('http') ? urlInput : 'https://' + urlInput;
+                groupLinks[boxId].stateItems.push({ type: 'link', label: labelInput, url: finalUrl });
+            }
+
+            renderDynamicBlocks();
+            updateAccordionHeight(boxId);
+            syncToDatabase();
+            showToast("Item adicionado. Salvando na nuvem...", "✏️");
+        }
+
+        function addStateBulkItems(boxId) {
+            if (sessionRole !== 'admin') return;
+            const textarea = document.getElementById(`bulk-textarea-${boxId}`);
+            const rawText = textarea.value.trim();
+            if (!rawText) return;
+
+            const lines = rawText.split('\n');
+            if(!groupLinks[boxId]) groupLinks[boxId] = { stateItems: [], cities: [] };
+            if(!groupLinks[boxId].stateItems) groupLinks[boxId].stateItems = [];
+
+            lines.forEach(line => {
+                const trimmed = line.trim();
+                if(!trimmed) return;
+
+                const urlRegex = /(https?:\/\/[^\s]+|chat\.whatsapp\.com\/[^\s]+)/i;
+                const match = trimmed.match(urlRegex);
+
+                if (match) {
+                    const urlMatch = match[0];
+                    let labelPart = trimmed.replace(urlMatch, '').trim().replace(/^\d+[\.\-\)]\s*/, '').trim();
+                    let fullUrl = urlMatch.startsWith('http') ? urlMatch : 'https://' + urlMatch;
+                    groupLinks[boxId].stateItems.push({ type: 'link', label: labelPart || 'Grupo de WhatsApp', url: fullUrl });
+                } else {
+                    groupLinks[boxId].stateItems.push({ type: 'title', text: trimmed });
+                }
+            });
+
+            textarea.value = '';
+            renderDynamicBlocks();
+            updateAccordionHeight(boxId);
+            syncToDatabase();
+            showToast("Lote processado. Salvando na nuvem...", "📂");
+        }
+
+        function editStateItem(boxId, index) {
+            if (sessionRole !== 'admin') return;
+            const item = groupLinks[boxId]?.stateItems?.[index];
+            if (!item || item.type !== 'link') return;
+            const newLabel = prompt('Editar nome do link:', item.label || '');
+            if (newLabel === null) return;
+            const newUrl = prompt('Editar URL do link:', item.url || '');
+            if (newUrl === null) return;
+            const label = newLabel.trim(), urlText = newUrl.trim();
+            if (!label || !urlText) { showToast('Nome e URL são obrigatórios.'); return; }
+            item.label = label;
+            item.url = urlText.startsWith('http') ? urlText : 'https://' + urlText;
+            renderDynamicBlocks();
+            syncToDatabase();
+            showToast('Link editado. Salvando na nuvem!', '✏️');
+        }
+
+        function deleteStateItem(boxId, index) {
+            if (sessionRole !== 'admin') return;
+            groupLinks[boxId].stateItems.splice(index, 1);
+            renderDynamicBlocks();
+            updateAccordionHeight(boxId);
+            syncToDatabase();
+            showToast("Item excluído. Salvando na nuvem...");
+        }
+
+        function addNewCity(boxId) {
+            if (sessionRole !== 'admin') return;
+            const input = document.getElementById(`new-city-name-${boxId}`);
+            const cityName = input.value.trim();
+            if (!cityName) return;
+
+            if (!groupLinks[boxId]) groupLinks[boxId] = { stateItems: [], cities: [] };
+            if (!groupLinks[boxId].cities) groupLinks[boxId].cities = [];
+
+            const cityId = boxId + "_" + cityName.toLowerCase().replace(/[^a-z0-9]/g, '_') + "_" + Date.now();
+            groupLinks[boxId].cities.push({
+                id: cityId,
+                name: cityName,
+                items: []
+            });
+
+            input.value = '';
+            renderDynamicBlocks();
+            updateAccordionHeight(boxId);
+            syncToDatabase();
+            showToast(`Sub-caixa "${cityName}" criada! Salvando na nuvem...`, "🏙️");
+        }
+
+        function editCityName(boxId, cityIdx) {
+            if (sessionRole !== 'admin') return;
+            const city = groupLinks[boxId].cities[cityIdx];
+            const newName = prompt(`Renomear cidade:`, city.name);
+            if (!newName || !newName.trim()) return;
+
+            city.name = newName.trim();
+            renderDynamicBlocks();
+            updateAccordionHeight(boxId);
+            syncToDatabase();
+            showToast("Cidade renomeada. Salvando na nuvem!");
+        }
+
+        function deleteCity(boxId, cityIdx) {
+            if (sessionRole !== 'admin') return;
+            if (!confirm("Excluir esta sub-caixa de cidade?")) return;
+
+            groupLinks[boxId].cities.splice(cityIdx, 1);
+            renderDynamicBlocks();
+            updateAccordionHeight(boxId);
+            syncToDatabase();
+            showToast("Sub-caixa removida. Salvando na nuvem.");
+        }
+
+        function addCityItem(boxId, cityIdx) {
+            if (sessionRole !== 'admin') return;
+            const city = groupLinks[boxId].cities[cityIdx];
+            const type = document.getElementById(`city-type-${city.id}`).value;
+            const labelInput = document.getElementById(`city-label-${city.id}`).value.trim();
+            const urlInput = document.getElementById(`city-url-${city.id}`).value.trim();
+
+            if (!labelInput) return;
+            if (!city.items) city.items = [];
+
+            if (type === 'title') {
+                city.items.push({ type: 'title', text: labelInput });
+            } else {
+                if (!urlInput) return;
+                let finalUrl = urlInput.startsWith('http') ? urlInput : 'https://' + urlInput;
+                city.items.push({ type: 'link', label: labelInput, url: finalUrl });
+            }
+
+            renderDynamicBlocks();
+            updateAccordionHeight(boxId);
+            syncToDatabase();
+            showToast("Item inserido na cidade. Salvando na nuvem!", "📍");
+        }
+
+        function addCityBulk(boxId, cityIdx) {
+            if (sessionRole !== 'admin') return;
+            const city = groupLinks[boxId].cities[cityIdx];
+            const textarea = document.getElementById(`city-bulk-${city.id}`);
+            const rawText = textarea.value.trim();
+            if (!rawText) return;
+
+            const lines = rawText.split('\n');
+            if (!city.items) city.items = [];
+
+            lines.forEach(line => {
+                const trimmed = line.trim();
+                if(!trimmed) return;
+
+                const urlRegex = /(https?:\/\/[^\s]+|chat\.whatsapp\.com\/[^\s]+)/i;
+                const match = trimmed.match(urlRegex);
+
+                if (match) {
+                    const urlMatch = match[0];
+                    let labelPart = trimmed.replace(urlMatch, '').trim().replace(/^\d+[\.\-\)]\s*/, '').trim();
+                    let fullUrl = urlMatch.startsWith('http') ? urlMatch : 'https://' + urlMatch;
+                    city.items.push({ type: 'link', label: labelPart || 'Grupo de WhatsApp', url: fullUrl });
+                } else {
+                    city.items.push({ type: 'title', text: trimmed });
+                }
+            });
+
+            textarea.value = '';
+            renderDynamicBlocks();
+            updateAccordionHeight(boxId);
+            syncToDatabase();
+            showToast("Lote processado na cidade. Salvando na nuvem!", "📂");
+        }
+
+        function editCityItem(boxId, cityIdx, itemIdx) {
+            if (sessionRole !== 'admin') return;
+            const item = groupLinks[boxId]?.cities?.[cityIdx]?.items?.[itemIdx];
+            if (!item || item.type !== 'link') return;
+            const newLabel = prompt('Editar nome do link:', item.label || '');
+            if (newLabel === null) return;
+            const newUrl = prompt('Editar URL do link:', item.url || '');
+            if (newUrl === null) return;
+            const label = newLabel.trim(), urlText = newUrl.trim();
+            if (!label || !urlText) { showToast('Nome e URL são obrigatórios.'); return; }
+            item.label = label;
+            item.url = urlText.startsWith('http') ? urlText : 'https://' + urlText;
+            renderDynamicBlocks();
+            updateAccordionHeight(boxId);
+            syncToDatabase();
+            showToast('Link editado. Salvando na nuvem!', '✏️');
+        }
+
+        function deleteCityItem(boxId, cityIdx, itemIdx) {
+            if (sessionRole !== 'admin') return;
+            groupLinks[boxId].cities[cityIdx].items.splice(itemIdx, 1);
+            renderDynamicBlocks();
+            updateAccordionHeight(boxId);
+            syncToDatabase();
+            showToast("Item excluído. Salvando na nuvem.");
+        }
+
+        function renderAdminUserList() {
+            const container = document.getElementById('candidates-list-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const clients = systemUsers.filter(u => u.role !== 'admin');
+            if (clients.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic p-3 text-center">Nenhum usuário cadastrado.</p>`;
+                return;
+            }
+
+            clients.forEach(usr => {
+                const item = document.createElement('div');
+                item.className = "flex items-center justify-between p-2.5 hover:bg-slate-50 transition gap-2 min-w-0";
+                
+                let statusBadge = usr.role === 'on_hold' 
+                    ? `<span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-medium">Pausado</span>`
+                    : `<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-medium">Ativo</span>`;
+
+                item.innerHTML = `
+                    <div class="flex flex-col min-w-0 flex-1">
+                        <span class="text-xs font-semibold text-slate-800 truncate">${usr.name}</span>
+                        <span class="text-[10px] text-slate-500 truncate">📧 ${usr.email} | 📱 ${usr.whatsapp}</span>
+                        <div class="flex items-center gap-1 mt-1">${statusBadge} <span class="text-[10px] text-slate-400 font-mono">(User: ${usr.username})</span></div>
+                    </div>
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button type="button" onclick="editRegisteredUser(${usr.id})" class="p-1 text-xs rounded hover:bg-blue-100" title="Editar cadastro">✏️</button>
+                        <button type="button" onclick="toggleUserStatus(${usr.id})" class="p-1 text-xs rounded hover:bg-slate-200 transition" title="Pausar / Ativar">${usr.role === 'on_hold' ? '✅' : '⏳'}</button>
+                        <button type="button" onclick="deleteUserFromSystem(${usr.id})" class="p-1 text-xs rounded hover:bg-rose-100 transition" title="Excluir">❌</button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        async function addCandidate() {
+            if (sessionRole !== 'admin') return;
+
+            const name = document.getElementById('new-candidate-name').value.trim();
+            const email = document.getElementById('new-candidate-email').value.trim();
+            const whatsapp = document.getElementById('new-candidate-whatsapp').value.trim();
+            const password = document.getElementById('new-candidate-password').value.trim();
+
+            if (!name || !email || !whatsapp || !password) return;
+
+            const generatedUsername = email.split('@')[0] + "_" + Math.floor(100 + Math.random() * 900);
+
+            const newUser = { 
+                id: Date.now(), 
+                username: generatedUsername, 
+                password: password, 
+                name: name, 
+                email: email,
+                whatsapp: whatsapp,
+                role: 'active' 
+            };
+
+            systemUsers.push(newUser);
+            renderAdminUserList();
+            applyStrictPermissionsUI();
+            syncToDatabase();
+            showToast("Usuário cadastrado. Salvando na nuvem!", "👤");
+        }
+
+        function editRegisteredUser(id) {
+            if (sessionRole !== 'admin') return;
+            const user = systemUsers.find(u => u.id === id);
+            if (!user || user.role === 'admin') return;
+            const name = prompt('Editar nome:', user.name || '');
+            if (name === null) return;
+            const email = prompt('Editar e-mail:', user.email || '');
+            if (email === null) return;
+            const whatsapp = prompt('Editar WhatsApp:', user.whatsapp || '');
+            if (whatsapp === null) return;
+            const password = prompt('Editar senha:', user.password || '');
+            if (password === null) return;
+            if (!name.trim() || !email.trim() || !whatsapp.trim() || !password.trim()) {
+                showToast('Todos os campos são obrigatórios.', '⚠️');
+                return;
+            }
+            user.name = name.trim();
+            user.email = email.trim();
+            user.whatsapp = whatsapp.trim();
+            user.password = password.trim();
+            renderAdminUserList();
+            syncToDatabase();
+            showToast('Cadastro atualizado. Salvando na nuvem!', '✏️');
+        }
+
+        function toggleUserStatus(id) {
+            if (sessionRole !== 'admin') return;
+            systemUsers = systemUsers.map(u => {
+                if (u.id === id) {
+                    const nextRole = u.role === 'active' ? 'on_hold' : 'active';
+                    return { ...u, role: nextRole };
+                }
+                return u;
+            });
+            renderAdminUserList();
+            syncToDatabase();
+            showToast("Status atualizado. Salvando na nuvem!");
+        }
+
+        function deleteUserFromSystem(id) {
+            if (sessionRole !== 'admin') return;
+            systemUsers = systemUsers.filter(u => u.id !== id);
+            renderAdminUserList();
+            syncToDatabase();
+            showToast("Usuário removido. Salvando na nuvem.");
+        }
+
+        function showToast(message, icon = "⚠️") {
+            const toast = document.getElementById('custom-toast');
+            document.getElementById('toast-message').innerText = message;
+            document.getElementById('toast-icon').innerText = icon;
+            
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 4000);
+        }
+
+        function showLockModal() {
+            const modal = document.getElementById('lock-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        }
+        
+        function hideLockModal() {
+            const modal = document.getElementById('lock-modal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+    </script>
+</body>
+</html>
