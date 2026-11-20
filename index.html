@@ -703,12 +703,14 @@
             }
         }
 
-        function toggleCityAccordion(cityDivId) {
+        function toggleCityAccordion(cityDivId, parentBlockId) {
             const content = document.getElementById(`city-content-${cityDivId}`);
             const arrow = document.getElementById(`city-arrow-${cityDivId}`);
             if (!content || !arrow) return;
 
-            const parentBlockId = cityDivId.split('_')[0];
+            // O ID de caixas personalizadas contém "_" (CUSTOM_timestamp).
+            // Portanto, não é seguro descobrir o bloco pai usando split('_')[0].
+            // O renderizador agora informa o ID completo do bloco pai.
             const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
 
             if (isOpen) {
@@ -735,11 +737,17 @@
 
             requestAnimationFrame(() => {
                 content.style.maxHeight = content.scrollHeight + 'px';
+                // Recalcula também após a transição interna e a atualização do layout.
+                requestAnimationFrame(() => {
+                    if (content && content.style.maxHeight && content.style.maxHeight !== '0px') {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                    }
+                });
                 setTimeout(() => {
                     if (content && content.style.maxHeight && content.style.maxHeight !== '0px') {
                         content.style.maxHeight = content.scrollHeight + 'px';
                     }
-                }, 280);
+                }, 320);
             });
         }
 
@@ -812,7 +820,7 @@
 
                     const cityHeader = document.createElement('div');
                     cityHeader.className = "px-4 py-3 bg-slate-100 flex items-center justify-between cursor-pointer hover:bg-slate-200/60 transition";
-                    cityHeader.setAttribute('onclick', `toggleCityAccordion('${city.id}')`);
+                    cityHeader.setAttribute('onclick', `toggleCityAccordion('${city.id}', '${block.id}')`);
 
                     const cityLinksCount = (city.items || []).filter(i => i.type === 'link').length;
                     let cityAdminControls = '';
@@ -990,7 +998,11 @@
                 div.dataset.blockId = block.id;
                 
                 const header = document.createElement('div');
-                header.className = "w-full px-5 py-4 flex items-center justify-between text-left font-semibold text-slate-800 bg-white hover:bg-slate-50/50 transition";
+                header.className = "w-full px-5 py-4 flex items-center justify-between text-left font-semibold text-slate-800 bg-white hover:bg-slate-50/50 transition cursor-pointer";
+                header.setAttribute('role', 'button');
+                header.setAttribute('tabindex', '0');
+                header.setAttribute('onclick', `toggleAccordion('${block.id}')`);
+                header.setAttribute('onkeydown', `if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleAccordion('${block.id}'); }`);
                 
                 let colorBadge = "bg-blue-500";
                 if(block.color === 'purple') colorBadge = "bg-purple-500";
@@ -1014,7 +1026,7 @@
                 }
 
                 header.innerHTML = `
-                    <div class="flex items-center gap-3 min-w-0 cursor-pointer w-full" onclick="toggleAccordion('${block.id}')">
+                    <div class="flex items-center gap-3 min-w-0 w-full">
                         <span class="w-2 h-2 rounded-full ${colorBadge} shrink-0"></span>
                         <span class="truncate text-slate-900 font-bold" id="title-text-${block.id}">${block.name}</span>
                         <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-normal shrink-0">
@@ -1023,7 +1035,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         ${orderingControls}
-                        <svg id="arrow-${block.id}" onclick="toggleAccordion('${block.id}')" class="w-5 h-5 text-slate-400 cursor-pointer transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg id="arrow-${block.id}" class="w-5 h-5 text-slate-400 transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
                     </div>
