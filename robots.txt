@@ -1,0 +1,6 @@
+# Pack de Grupos: regras gerais de rastreamento.
+User-agent: *
+Allow: /
+
+# Quando o domínio e o sitemap público forem definidos, remova o comentário e ajuste a URL.
+# Sitemap: https://packdegrupos.vercel.app//sitemap.xml
