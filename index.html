@@ -47,7 +47,20 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .accordion-content { transition: max-height 0.25s ease-out; }
+        .accordion-content {
+            transition: max-height 0.25s ease-out;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-gutter: stable;
+            max-width: 100%;
+        }
+        @media (max-width: 640px) {
+            .accordion-content { scrollbar-width: thin; }
+            .accordion-content > div { min-width: 0; }
+            #auth-forms-container { width: 100%; justify-content: center; }
+            #auth-forms-container input { min-width: 0; }
+        }
     </style>
     <!-- SEO/GEO: conteúdo semântico, metadados e Schema.org. llms.txt é publicado no diretório raiz do domínio. -->
 </head>
@@ -399,9 +412,77 @@
 
         const API_URL = 'https://script.google.com/macros/s/AKfycbziNpif-VLcbERshq1DbxVc093Yn8czY1mENG8egcRhBGK2dX0N5wMDPV49DDM-F8Oe5A/exec';
 
-        window.onload = async function() {
+        const CLOUD_CACHE_KEY = 'packdegrupos_cloud_cache_v1';
+        const SESSION_KEY = 'packdegrupos_session_v1';
+
+        function applyCloudPayload(result) {
+            cloudRevision = Number(result.revision || 0);
+
+            if (result.hasData === true) {
+                systemUsers = Array.isArray(result.users) ? result.users : [];
+                blocksOrder = Array.isArray(result.blocks) ? result.blocks : [];
+                groupLinks = (result.links && typeof result.links === 'object' && !Array.isArray(result.links))
+                    ? result.links : {};
+            } else {
+                if (Array.isArray(result.users) && result.users.length) systemUsers = result.users;
+                if (Array.isArray(result.blocks) && result.blocks.length) blocksOrder = result.blocks;
+                if (result.links && typeof result.links === 'object' && !Array.isArray(result.links)) {
+                    groupLinks = result.links;
+                }
+            }
+
+            blocksOrder.forEach(block => {
+                if (!groupLinks[block.id]) groupLinks[block.id] = { stateItems: [], cities: [] };
+                if (!Array.isArray(groupLinks[block.id].stateItems)) groupLinks[block.id].stateItems = [];
+                if (!Array.isArray(groupLinks[block.id].cities)) groupLinks[block.id].cities = [];
+            });
+        }
+
+        function loadCachedCloudData() {
+            try {
+                const raw = localStorage.getItem(CLOUD_CACHE_KEY);
+                if (!raw) return false;
+                const cached = JSON.parse(raw);
+                if (!cached || !cached.payload || !cached.savedAt) return false;
+
+                applyCloudPayload(cached.payload);
+                return true;
+            } catch (error) {
+                console.warn('Cache local indisponível:', error);
+                return false;
+            }
+        }
+
+        function saveCachedCloudData(payload) {
+            try {
+                // Não grava senhas no armazenamento local. A sessão persistida usa somente o identificador.
+                const safePayload = {
+                    ...payload,
+                    users: Array.isArray(payload.users)
+                        ? payload.users.map(({ password, ...user }) => user)
+                        : []
+                };
+                const cacheText = JSON.stringify({ savedAt: Date.now(), payload: safePayload });
+                // Evita travar/quebrar navegadores com pouco espaço de armazenamento.
+                if (cacheText.length <= 2500000) {
+                    localStorage.setItem(CLOUD_CACHE_KEY, cacheText);
+                }
+            } catch (error) {
+                console.warn('Não foi possível atualizar o cache local:', error);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', async function() {
+            // Mostra imediatamente a última cópia válida neste aparelho, quando existir.
+            const hasLocalCache = loadCachedCloudData();
+            if (hasLocalCache) {
+                restoreSession();
+                renderAdminUserList();
+                applyStrictPermissionsUI();
+            }
+            // A nuvem continua sendo consultada para validar e atualizar os dados.
             await fetchCloudData();
-        };
+        });
 
         let cloudRevision = 0;
         let saveQueue = Promise.resolve();
@@ -416,40 +497,21 @@
                     throw new Error(result?.message || "Resposta inválida da nuvem.");
                 }
 
-                cloudRevision = Number(result.revision || 0);
-
-                if (result.hasData === true) {
-                    systemUsers = Array.isArray(result.users) ? result.users : [];
-                    blocksOrder = Array.isArray(result.blocks) ? result.blocks : [];
-                    groupLinks = (result.links && typeof result.links === 'object' && !Array.isArray(result.links))
-                        ? result.links
-                        : {};
-                } else {
-                    if (Array.isArray(result.users) && result.users.length) systemUsers = result.users;
-                    if (Array.isArray(result.blocks) && result.blocks.length) blocksOrder = result.blocks;
-                    if (result.links && typeof result.links === 'object') {
-                        groupLinks = result.links;
-                    }
-                }
-
-                blocksOrder.forEach(block => {
-                    if (!groupLinks[block.id]) groupLinks[block.id] = { stateItems: [], cities: [] };
-                    if (!Array.isArray(groupLinks[block.id].stateItems)) groupLinks[block.id].stateItems = [];
-                    if (!Array.isArray(groupLinks[block.id].cities)) groupLinks[block.id].cities = [];
-                });
-
-                renderDynamicBlocks();
+                applyCloudPayload(result);
+                saveCachedCloudData(result);
+                restoreSession();
                 renderAdminUserList();
                 applyStrictPermissionsUI();
             } catch (error) {
                 console.error("Erro ao carregar dados da nuvem:", error);
+
                 blocksOrder.forEach(block => {
                     if (!groupLinks[block.id]) groupLinks[block.id] = { stateItems: [], cities: [] };
                 });
-                renderDynamicBlocks();
+
                 renderAdminUserList();
                 applyStrictPermissionsUI();
-                showToast("Não foi possível atualizar os dados da nuvem.", "⚠️");
+                showToast("Não foi possível atualizar os dados da nuvem. Se houver cache local, ele continuará disponível.", "⚠️");
             }
         }
 
@@ -505,6 +567,49 @@
             }
         }
 
+        function persistSession(user) {
+            try {
+                localStorage.setItem(SESSION_KEY, JSON.stringify({
+                    id: String(user.id),
+                    username: user.username || '',
+                    email: user.email || ''
+                }));
+            } catch (error) {
+                console.warn('Não foi possível persistir a sessão neste navegador:', error);
+            }
+        }
+
+        function restoreSession() {
+            let saved;
+            try {
+                const raw = localStorage.getItem(SESSION_KEY);
+                if (!raw) return false;
+                saved = JSON.parse(raw);
+            } catch (error) {
+                localStorage.removeItem(SESSION_KEY);
+                return false;
+            }
+
+            const user = systemUsers.find(u =>
+                String(u.id) === String(saved.id) ||
+                (saved.username && String(u.username || '').toLowerCase() === String(saved.username).toLowerCase()) ||
+                (saved.email && String(u.email || '').toLowerCase() === String(saved.email).toLowerCase())
+            );
+
+            if (!user || !['admin', 'active', 'on_hold'].includes(user.role)) {
+                localStorage.removeItem(SESSION_KEY);
+                sessionRole = 'guest';
+                loggedUserLabel = '';
+                loggedUserEmail = '';
+                return false;
+            }
+
+            sessionRole = user.role;
+            loggedUserLabel = user.name || user.username || 'Usuário';
+            loggedUserEmail = user.email || user.username || '';
+            return true;
+        }
+
         function handleLogin() {
             const userInp = document.getElementById('login-username').value.trim().toLowerCase();
             const passInp = document.getElementById('login-password').value.trim();
@@ -535,6 +640,7 @@
             sessionRole = foundUser.role;
             loggedUserLabel = foundUser.name;
             loggedUserEmail = foundUser.email || foundUser.username || '';
+            persistSession(foundUser);
 
             document.getElementById('login-username').value = '';
             document.getElementById('login-password').value = '';
@@ -544,6 +650,7 @@
         }
 
         function handleLogout() {
+            localStorage.removeItem(SESSION_KEY);
             sessionRole = 'guest';
             loggedUserLabel = '';
             loggedUserEmail = '';
@@ -609,6 +716,12 @@
             renderDynamicBlocks();
         }
 
+        function setAccordionOpenHeight(content, maxViewportPercent = 78) {
+            if (!content) return;
+            const viewportLimit = Math.max(220, Math.floor(window.innerHeight * (maxViewportPercent / 100)));
+            content.style.maxHeight = Math.min(content.scrollHeight, viewportLimit) + 'px';
+        }
+
         function toggleSimpleSection(contentId, arrowId) {
             const content = document.getElementById(contentId);
             const arrow = document.getElementById(arrowId);
@@ -619,11 +732,11 @@
                 content.style.maxHeight = '0px';
                 arrow.classList.remove('rotate-180');
             } else {
-                content.style.maxHeight = content.scrollHeight + 'px';
+                setAccordionOpenHeight(content);
                 arrow.classList.add('rotate-180');
                 setTimeout(() => {
                     if (content.style.maxHeight && content.style.maxHeight !== '0px') {
-                        content.style.maxHeight = content.scrollHeight + 'px';
+                        setAccordionOpenHeight(content);
                     }
                 }, 260);
             }
@@ -692,12 +805,12 @@
                 arrow.classList.remove('rotate-180');
             } else {
                 renderBlockContent(id);
-                content.style.maxHeight = content.scrollHeight + 'px';
+                setAccordionOpenHeight(content);
                 arrow.classList.add('rotate-180');
 
                 setTimeout(() => {
                     if (content.style.maxHeight && content.style.maxHeight !== '0px') {
-                        content.style.maxHeight = content.scrollHeight + 'px';
+                        setAccordionOpenHeight(content);
                     }
                 }, 280);
             }
@@ -717,12 +830,12 @@
                 content.style.maxHeight = '0px';
                 arrow.classList.remove('rotate-180');
             } else {
-                content.style.maxHeight = content.scrollHeight + 'px';
+                setAccordionOpenHeight(content, 65);
                 arrow.classList.add('rotate-180');
 
                 setTimeout(() => {
                     if (content.style.maxHeight && content.style.maxHeight !== '0px') {
-                        content.style.maxHeight = content.scrollHeight + 'px';
+                        setAccordionOpenHeight(content, 65);
                     }
                     updateAccordionHeight(parentBlockId);
                 }, 280);
@@ -736,16 +849,16 @@
             if (!content || !content.style.maxHeight || content.style.maxHeight === '0px') return;
 
             requestAnimationFrame(() => {
-                content.style.maxHeight = content.scrollHeight + 'px';
+                setAccordionOpenHeight(content, 78);
                 // Recalcula também após a transição interna e a atualização do layout.
                 requestAnimationFrame(() => {
                     if (content && content.style.maxHeight && content.style.maxHeight !== '0px') {
-                        content.style.maxHeight = content.scrollHeight + 'px';
+                        setAccordionOpenHeight(content, 78);
                     }
                 });
                 setTimeout(() => {
                     if (content && content.style.maxHeight && content.style.maxHeight !== '0px') {
-                        content.style.maxHeight = content.scrollHeight + 'px';
+                        setAccordionOpenHeight(content, 78);
                     }
                 }, 320);
             });
@@ -1062,7 +1175,7 @@
                     blocosAbertos.forEach(id => {
                         const el = document.getElementById(id);
                         if (!el) return;
-                        el.style.maxHeight = el.scrollHeight + 'px';
+                        setAccordionOpenHeight(el, id.startsWith('city-content-') ? 65 : 78);
                         const baseId = id.replace('content-', '').replace('city-content-', '');
                         const arrow = document.getElementById(`arrow-${baseId}`) || document.getElementById(`city-arrow-${baseId}`);
                         if (arrow) arrow.classList.add('rotate-180');
