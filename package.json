@@ -1,0 +1,7 @@
+{
+  "name": "pack-de-grupos-firebase-security",
+  "private": true,
+  "version": "1.0.0",
+  "engines": { "node": "20.x" },
+  "dependencies": { "firebase-admin": "^13.0.0" }
+}

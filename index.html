@@ -63,6 +63,8 @@
         }
     </style>
     <!-- SEO/GEO: conteúdo semântico, metadados e Schema.org. llms.txt é publicado no diretório raiz do domínio. -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
 
@@ -79,7 +81,7 @@
 
             <!-- Formulário de Login com Botão de Visualizar Senha -->
             <div id="auth-forms-container" class="flex flex-wrap items-center gap-2">
-                <input type="text" id="login-username" placeholder="E-mail ou Usuário" class="text-xs px-3 py-1.5 rounded bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 w-36 md:w-44">
+                <input type="email" id="login-username" autocomplete="username" placeholder="E-mail" class="text-xs px-3 py-1.5 rounded bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 w-36 md:w-44">
                 
                 <div class="relative flex items-center">
                     <input type="password" id="login-password" placeholder="Senha" class="text-xs px-3 py-1.5 pr-8 rounded bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 w-28 md:w-36">
@@ -361,10 +363,7 @@
         let loggedUserLabel = '';
         let loggedUserEmail = '';
 
-        let initialUsers = [
-            { id: 101, username: "Johnn Adm.", password: "JohnnLRS#1@2", name: "Johnn Lucas (ADM)", email: "admin@pack.com", whatsapp: "11999999999", role: "admin" },
-            { id: 102, username: "joao", password: "User@123", name: "João Assinante", email: "joao@email.com", whatsapp: "11988888888", role: "active" }
-        ];
+        let initialUsers = []; // Perfis são carregados somente pela API autenticada.
 
         let initialBlocksOrder = [
             { id: "AC", name: "Acre (AC)", type: "state", color: "blue" },
@@ -406,31 +405,47 @@
             };
         });
 
-        let systemUsers = initialUsers;
+        let systemUsers = [];
         let groupLinks = initialLinks;
+        let publicLinkCounts = {};
         let blocksOrder = initialBlocksOrder;
 
-        const API_URL = 'https://script.google.com/macros/s/AKfycbziNpif-VLcbERshq1DbxVc093Yn8czY1mENG8egcRhBGK2dX0N5wMDPV49DDM-F8Oe5A/exec';
+        const firebaseConfig = {
+            apiKey: "AIzaSyDB7EnDa6lWVzwZigcKoWFgnFUYO5PpOJw",
+            authDomain: "pack-de-grupos-c9ba3.firebaseapp.com",
+            projectId: "pack-de-grupos-c9ba3",
+            storageBucket: "pack-de-grupos-c9ba3.firebasestorage.app",
+            messagingSenderId: "459267288192",
+            appId: "1:459267288192:web:7c896acf91123933af0a65",
+            measurementId: "G-NP2DCPQP2S"
+        };
+        const firebaseApp = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(console.error);
+        let currentPackUser = null;
+        let authReady = false;
 
-        const CLOUD_CACHE_KEY = 'packdegrupos_cloud_cache_v1';
-        const SESSION_KEY = 'packdegrupos_session_v1';
+        async function apiRequest(path, options = {}) {
+            const user = auth.currentUser;
+            const headers = { ...(options.headers || {}) };
+            if (user) headers.Authorization = `Bearer ${await user.getIdToken()}`;
+            if (options.body && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
+            const response = await fetch(path, { ...options, headers, cache: 'no-store' });
+            let result = {};
+            try { result = await response.json(); } catch (_) {}
+            if (!response.ok || result.status === 'error' || result.status === 'conflict') {
+                throw new Error(result.message || `Erro HTTP ${response.status}`);
+            }
+            return result;
+        }
 
         function applyCloudPayload(result) {
             cloudRevision = Number(result.revision || 0);
-
-            if (result.hasData === true) {
-                systemUsers = Array.isArray(result.users) ? result.users : [];
-                blocksOrder = Array.isArray(result.blocks) ? result.blocks : [];
-                groupLinks = (result.links && typeof result.links === 'object' && !Array.isArray(result.links))
-                    ? result.links : {};
-            } else {
-                if (Array.isArray(result.users) && result.users.length) systemUsers = result.users;
-                if (Array.isArray(result.blocks) && result.blocks.length) blocksOrder = result.blocks;
-                if (result.links && typeof result.links === 'object' && !Array.isArray(result.links)) {
-                    groupLinks = result.links;
-                }
-            }
-
+            systemUsers = Array.isArray(result.users) ? result.users : [];
+            if (Array.isArray(result.blocks) && result.blocks.length) blocksOrder = result.blocks;
+            else if (!blocksOrder.length) blocksOrder = initialBlocksOrder;
+            groupLinks = (result.links && typeof result.links === 'object' && !Array.isArray(result.links)) ? result.links : {};
+            publicLinkCounts = (result.linkCounts && typeof result.linkCounts === 'object') ? result.linkCounts : {};
             blocksOrder.forEach(block => {
                 if (!groupLinks[block.id]) groupLinks[block.id] = { stateItems: [], cities: [] };
                 if (!Array.isArray(groupLinks[block.id].stateItems)) groupLinks[block.id].stateItems = [];
@@ -438,50 +453,35 @@
             });
         }
 
-        function loadCachedCloudData() {
+        window.addEventListener('DOMContentLoaded', function() {
+            // Remove o cache antigo: ele foi criado antes da autenticação segura.
             try {
-                const raw = localStorage.getItem(CLOUD_CACHE_KEY);
-                if (!raw) return false;
-                const cached = JSON.parse(raw);
-                if (!cached || !cached.payload || !cached.savedAt) return false;
-
-                applyCloudPayload(cached.payload);
-                return true;
-            } catch (error) {
-                console.warn('Cache local indisponível:', error);
-                return false;
-            }
-        }
-
-        function saveCachedCloudData(payload) {
-            try {
-                // Não grava senhas no armazenamento local. A sessão persistida usa somente o identificador.
-                const safePayload = {
-                    ...payload,
-                    users: Array.isArray(payload.users)
-                        ? payload.users.map(({ password, ...user }) => user)
-                        : []
-                };
-                const cacheText = JSON.stringify({ savedAt: Date.now(), payload: safePayload });
-                // Evita travar/quebrar navegadores com pouco espaço de armazenamento.
-                if (cacheText.length <= 2500000) {
-                    localStorage.setItem(CLOUD_CACHE_KEY, cacheText);
+                localStorage.removeItem('packdegrupos_cloud_cache_v1');
+                localStorage.removeItem('packdegrupos_session_v1');
+            } catch (_) {}
+            auth.onAuthStateChanged(async (firebaseUser) => {
+                currentPackUser = firebaseUser;
+                if (!firebaseUser) {
+                    sessionRole = 'guest';
+                    loggedUserLabel = '';
+                    loggedUserEmail = '';
+                    systemUsers = [];
+                    try { await fetchCloudData(); }
+                    catch (error) { console.error(error); showToast('Não foi possível carregar os dados públicos.', '⚠️'); }
+                    finally { authReady = true; }
+                    applyStrictPermissionsUI();
+                    return;
                 }
-            } catch (error) {
-                console.warn('Não foi possível atualizar o cache local:', error);
-            }
-        }
-
-        window.addEventListener('DOMContentLoaded', async function() {
-            // Mostra imediatamente a última cópia válida neste aparelho, quando existir.
-            const hasLocalCache = loadCachedCloudData();
-            if (hasLocalCache) {
-                restoreSession();
-                renderAdminUserList();
-                applyStrictPermissionsUI();
-            }
-            // A nuvem continua sendo consultada para validar e atualizar os dados.
-            await fetchCloudData();
+                try {
+                    await fetchCloudData();
+                } catch (error) {
+                    console.error(error);
+                    showToast(error.message || 'Não foi possível validar sua conta.', '❌');
+                    await auth.signOut();
+                } finally {
+                    authReady = true;
+                }
+            });
         });
 
         let cloudRevision = 0;
@@ -489,29 +489,28 @@
 
         async function fetchCloudData() {
             try {
-                const response = await fetch(API_URL, { cache: 'no-store' });
-                if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
-
-                const result = await response.json();
-                if (!result || result.status !== "success") {
-                    throw new Error(result?.message || "Resposta inválida da nuvem.");
-                }
-
+                const result = await apiRequest('/api/data', { method: 'GET' });
+                if (!result || result.status !== 'success') throw new Error(result?.message || 'Resposta inválida do servidor.');
                 applyCloudPayload(result);
-                saveCachedCloudData(result);
-                restoreSession();
+                if (result.user) {
+                    sessionRole = result.user.role || 'guest';
+                    loggedUserLabel = result.user.name || result.user.username || result.user.email || 'Usuário';
+                    loggedUserEmail = result.user.email || '';
+                } else {
+                    sessionRole = 'guest';
+                    loggedUserLabel = '';
+                    loggedUserEmail = '';
+                }
                 renderAdminUserList();
                 applyStrictPermissionsUI();
+                return result;
             } catch (error) {
-                console.error("Erro ao carregar dados da nuvem:", error);
-
-                blocksOrder.forEach(block => {
-                    if (!groupLinks[block.id]) groupLinks[block.id] = { stateItems: [], cities: [] };
-                });
-
+                console.error('Erro ao carregar dados do servidor:', error);
+                if (!blocksOrder.length) blocksOrder = initialBlocksOrder;
+                blocksOrder.forEach(block => { if (!groupLinks[block.id]) groupLinks[block.id] = { stateItems: [], cities: [] }; });
                 renderAdminUserList();
                 applyStrictPermissionsUI();
-                showToast("Não foi possível atualizar os dados da nuvem. Se houver cache local, ele continuará disponível.", "⚠️");
+                throw error;
             }
         }
 
@@ -522,140 +521,50 @@
 
         async function syncToDatabase() {
             if (sessionRole !== 'admin') {
-                showToast("Apenas o Administrador pode salvar na nuvem.", "❌");
+                showToast('Apenas o Administrador pode salvar na nuvem.', '❌');
                 return false;
             }
-
             const saveTask = saveQueue.then(async () => {
-                showToast("Salvando alterações na nuvem...", "⏳");
-                const snapshot = JSON.stringify({
-                    action: 'save_all',
-                    revision: cloudRevision,
-                    users: systemUsers,
-                    blocks: blocksOrder,
-                    links: groupLinks
-                });
-                const response = await fetch(API_URL, {
+                showToast('Salvando alterações na nuvem...', '⏳');
+                const result = await apiRequest('/api/data', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: snapshot
+                    body: JSON.stringify({ action: 'save_all', revision: cloudRevision, blocks: blocksOrder, links: groupLinks })
                 });
-
-                if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
-                const result = await response.json();
-                if (!result || result.status !== 'success') {
-                    if (result?.status === 'conflict') {
-                        throw new Error("Os dados foram alterados em outra sessão. Atualize a página antes de salvar novamente.");
-                    }
-                    throw new Error(result?.message || "O servidor não confirmou o salvamento.");
-                }
-
                 cloudRevision = Number(result.revision || (cloudRevision + 1));
-                showToast("Dados salvos e confirmados na nuvem!", "🚀");
+                showToast('Dados salvos e confirmados na nuvem!', '🚀');
                 return true;
             });
-
             saveQueue = saveTask.catch(error => {
-                console.error("Erro ao sincronizar com o banco de dados:", error);
-                showToast("Falha ao salvar: " + error.message, "⚠️");
+                console.error('Erro ao sincronizar:', error);
+                showToast('Falha ao salvar: ' + error.message, '⚠️');
             });
+            try { return await saveTask; } catch (_) { return false; }
+        }
 
+        async function handleLogin() {
+            const email = document.getElementById('login-username').value.trim().toLowerCase();
+            const password = document.getElementById('login-password').value;
+            if (!email || !password) { showToast('Digite seu e-mail e sua senha.'); return; }
             try {
-                return await saveTask;
+                await auth.signInWithEmailAndPassword(email, password);
+                document.getElementById('login-username').value = '';
+                document.getElementById('login-password').value = '';
+                showToast('Login realizado. Validando permissões...', '🔑');
             } catch (error) {
-                return false;
+                console.error('Falha no login Firebase:', error);
+                const messages = {
+                    'auth/invalid-credential': 'E-mail ou senha incorretos.',
+                    'auth/user-not-found': 'Conta não encontrada no Firebase.',
+                    'auth/wrong-password': 'E-mail ou senha incorretos.',
+                    'auth/too-many-requests': 'Muitas tentativas. Aguarde e tente novamente.'
+                };
+                showToast(messages[error.code] || 'Não foi possível entrar. Confira e-mail e senha.', '❌');
             }
         }
 
-        function persistSession(user) {
-            try {
-                localStorage.setItem(SESSION_KEY, JSON.stringify({
-                    id: String(user.id),
-                    username: user.username || '',
-                    email: user.email || ''
-                }));
-            } catch (error) {
-                console.warn('Não foi possível persistir a sessão neste navegador:', error);
-            }
-        }
-
-        function restoreSession() {
-            let saved;
-            try {
-                const raw = localStorage.getItem(SESSION_KEY);
-                if (!raw) return false;
-                saved = JSON.parse(raw);
-            } catch (error) {
-                localStorage.removeItem(SESSION_KEY);
-                return false;
-            }
-
-            const user = systemUsers.find(u =>
-                String(u.id) === String(saved.id) ||
-                (saved.username && String(u.username || '').toLowerCase() === String(saved.username).toLowerCase()) ||
-                (saved.email && String(u.email || '').toLowerCase() === String(saved.email).toLowerCase())
-            );
-
-            if (!user || !['admin', 'active', 'on_hold'].includes(user.role)) {
-                localStorage.removeItem(SESSION_KEY);
-                sessionRole = 'guest';
-                loggedUserLabel = '';
-                loggedUserEmail = '';
-                return false;
-            }
-
-            sessionRole = user.role;
-            loggedUserLabel = user.name || user.username || 'Usuário';
-            loggedUserEmail = user.email || user.username || '';
-            return true;
-        }
-
-        function handleLogin() {
-            const userInp = document.getElementById('login-username').value.trim().toLowerCase();
-            const passInp = document.getElementById('login-password').value.trim();
-
-            if(!userInp || !passInp) {
-                showToast("Digite o usuário e a senha.");
-                return;
-            }
-
-            const foundUser = systemUsers.find(u => {
-                const uName = (u.username || '').toLowerCase().trim();
-                const uEmail = (u.email || '').toLowerCase().trim();
-                const uPass = String(u.password || '').trim();
-
-                const matchUser = uName === userInp || 
-                                  uEmail === userInp ||
-                                  (u.role === 'admin' && ['admin', 'johnn adm', 'johnn adm.', 'johnn'].includes(userInp));
-                
-                const matchPass = uPass === passInp;
-                return matchUser && matchPass;
-            });
-
-            if(!foundUser) {
-                showToast("Usuário ou senha incorretos.", "❌");
-                return;
-            }
-
-            sessionRole = foundUser.role;
-            loggedUserLabel = foundUser.name;
-            loggedUserEmail = foundUser.email || foundUser.username || '';
-            persistSession(foundUser);
-
-            document.getElementById('login-username').value = '';
-            document.getElementById('login-password').value = '';
-
-            applyStrictPermissionsUI();
-            showToast(`Sessão iniciada como ${loggedUserLabel}!`, "🔑");
-        }
-
-        function handleLogout() {
-            localStorage.removeItem(SESSION_KEY);
-            sessionRole = 'guest';
-            loggedUserLabel = '';
-            loggedUserEmail = '';
-            applyStrictPermissionsUI();
-            showToast("Logout efetuado com sucesso.", "ℹ️");
+        async function handleLogout() {
+            try { await auth.signOut(); showToast('Logout efetuado com sucesso.', 'ℹ️'); }
+            catch (error) { showToast('Não foi possível sair da conta: ' + error.message, '❌'); }
         }
 
         function applyStrictPermissionsUI() {
@@ -766,10 +675,11 @@
             showToast("Enviando solicitação...", "⏳");
 
             try {
-                await fetch(API_URL, {
+                const result = await apiRequest('/api/report', {
                     method: 'POST',
-                    body: JSON.stringify({ name, email, state, city, nicho, desc, submittedBy: `${loggedUserLabel} (${loggedUserEmail})` })
+                    body: JSON.stringify({ name, email, state, city, nicho, desc })
                 });
+                if (result.status !== 'success') throw new Error(result.message || 'Falha ao enviar solicitação.');
 
                 showToast("Solicitação enviada e salva na planilha com sucesso!", "🚀");
                 
@@ -1124,7 +1034,9 @@
                 const blockData = groupLinks[block.id];
                 const totalStateLinks = (blockData.stateItems || []).filter(i => i.type === 'link').length;
                 const totalCityLinks = (blockData.cities || []).reduce((acc, c) => acc + (c.items || []).filter(i => i.type === 'link').length, 0);
-                const totalLinksCount = totalStateLinks + totalCityLinks;
+                const totalLinksCount = sessionRole === 'guest'
+                    ? Number(publicLinkCounts[block.id] || 0)
+                    : totalStateLinks + totalCityLinks;
 
                 let orderingControls = '';
                 if(sessionRole === 'admin') {
@@ -1500,78 +1412,54 @@
 
         async function addCandidate() {
             if (sessionRole !== 'admin') return;
-
             const name = document.getElementById('new-candidate-name').value.trim();
-            const email = document.getElementById('new-candidate-email').value.trim();
+            const email = document.getElementById('new-candidate-email').value.trim().toLowerCase();
             const whatsapp = document.getElementById('new-candidate-whatsapp').value.trim();
-            const password = document.getElementById('new-candidate-password').value.trim();
-
-            if (!name || !email || !whatsapp || !password) return;
-
-            const generatedUsername = email.split('@')[0] + "_" + Math.floor(100 + Math.random() * 900);
-
-            const newUser = { 
-                id: Date.now(), 
-                username: generatedUsername, 
-                password: password, 
-                name: name, 
-                email: email,
-                whatsapp: whatsapp,
-                role: 'active' 
-            };
-
-            systemUsers.push(newUser);
-            renderAdminUserList();
-            applyStrictPermissionsUI();
-            syncToDatabase();
-            showToast("Usuário cadastrado. Salvando na nuvem!", "👤");
+            const password = document.getElementById('new-candidate-password').value;
+            if (!name || !email || !whatsapp || !password) { showToast('Preencha nome, e-mail, WhatsApp e senha.', '⚠️'); return; }
+            try {
+                await apiRequest('/api/users', { method: 'POST', body: JSON.stringify({ action: 'create', user: { name, email, whatsapp, password } }) });
+                ['new-candidate-name','new-candidate-email','new-candidate-whatsapp','new-candidate-password'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+                await fetchCloudData();
+                showToast('Usuário cadastrado no Firebase!', '👤');
+            } catch (error) { showToast('Não foi possível cadastrar: ' + error.message, '❌'); }
         }
 
-        function editRegisteredUser(id) {
+        async function editRegisteredUser(id) {
             if (sessionRole !== 'admin') return;
-            const user = systemUsers.find(u => u.id === id);
+            const user = systemUsers.find(u => String(u.id) === String(id));
             if (!user || user.role === 'admin') return;
-            const name = prompt('Editar nome:', user.name || '');
-            if (name === null) return;
-            const email = prompt('Editar e-mail:', user.email || '');
-            if (email === null) return;
-            const whatsapp = prompt('Editar WhatsApp:', user.whatsapp || '');
-            if (whatsapp === null) return;
-            const password = prompt('Editar senha:', user.password || '');
-            if (password === null) return;
-            if (!name.trim() || !email.trim() || !whatsapp.trim() || !password.trim()) {
-                showToast('Todos os campos são obrigatórios.', '⚠️');
-                return;
-            }
-            user.name = name.trim();
-            user.email = email.trim();
-            user.whatsapp = whatsapp.trim();
-            user.password = password.trim();
-            renderAdminUserList();
-            syncToDatabase();
-            showToast('Cadastro atualizado. Salvando na nuvem!', '✏️');
+            const name = prompt('Editar nome:', user.name || ''); if (name === null) return;
+            const email = prompt('Editar e-mail:', user.email || ''); if (email === null) return;
+            const whatsapp = prompt('Editar WhatsApp:', user.whatsapp || ''); if (whatsapp === null) return;
+            if (!name.trim() || !email.trim() || !whatsapp.trim()) { showToast('Nome, e-mail e WhatsApp são obrigatórios.', '⚠️'); return; }
+            try {
+                await apiRequest('/api/users', { method: 'POST', body: JSON.stringify({ action: 'update', id, user: { name: name.trim(), email: email.trim(), whatsapp: whatsapp.trim() } }) });
+                await fetchCloudData();
+                showToast('Cadastro atualizado.', '✏️');
+            } catch (error) { showToast('Falha ao atualizar: ' + error.message, '❌'); }
         }
 
-        function toggleUserStatus(id) {
+        async function toggleUserStatus(id) {
             if (sessionRole !== 'admin') return;
-            systemUsers = systemUsers.map(u => {
-                if (u.id === id) {
-                    const nextRole = u.role === 'active' ? 'on_hold' : 'active';
-                    return { ...u, role: nextRole };
-                }
-                return u;
-            });
-            renderAdminUserList();
-            syncToDatabase();
-            showToast("Status atualizado. Salvando na nuvem!");
+            const user = systemUsers.find(u => String(u.id) === String(id));
+            if (!user) return;
+            const role = user.role === 'on_hold' ? 'active' : 'on_hold';
+            try {
+                await apiRequest('/api/users', { method: 'POST', body: JSON.stringify({ action: 'status', id, role }) });
+                await fetchCloudData();
+                showToast('Status atualizado no Firebase.', '✅');
+            } catch (error) { showToast('Falha ao alterar status: ' + error.message, '❌'); }
         }
 
-        function deleteUserFromSystem(id) {
+        async function deleteUserFromSystem(id) {
             if (sessionRole !== 'admin') return;
-            systemUsers = systemUsers.filter(u => u.id !== id);
-            renderAdminUserList();
-            syncToDatabase();
-            showToast("Usuário removido. Salvando na nuvem.");
+            if (!confirm('Tem certeza de que deseja excluir este usuário? A conta de autenticação também será excluída.')) return;
+            try {
+                await apiRequest('/api/users', { method: 'POST', body: JSON.stringify({ action: 'delete', id }) });
+                await fetchCloudData();
+                showToast('Usuário excluído.', 'ℹ️');
+            } catch (error) { showToast('Falha ao excluir: ' + error.message, '❌'); }
         }
 
         function showToast(message, icon = "⚠️") {

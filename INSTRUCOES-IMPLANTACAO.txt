@@ -1,0 +1,41 @@
+PACK DE GRUPOS — PACOTE INTEGRADO FIREBASE
+
+IMPORTANTE
+- Este pacote ainda NÃO foi publicado.
+- NÃO execute /api/migrate-users nesta etapa.
+- NÃO apague nem altere a planilha Google.
+- Mantenha o Apps Script v3 já publicado e as variáveis de ambiente da Vercel.
+- Faça backup da planilha Database antes de qualquer migração futura.
+
+O QUE FOI PRESERVADO
+- Arquivos SEO/GEO/MCP, verificação do Google, robots.txt, sitemap.xml e llms.txt do ZIP atual do GitHub.
+- HTML atual do GitHub como base, incluindo estrutura visual, blocos, accordions, links e ajustes anteriores.
+- A integração de login foi alterada para Firebase Authentication e as operações passam pelas APIs privadas em /api.
+- Visitantes continuam vendo a estrutura dos blocos e a quantidade de links, mas não recebem as URLs dos grupos. O próprio site já bloqueia a abertura dos accordions para visitantes. Usuários autenticados e liberados recebem os links.
+
+ARQUIVOS NOVOS/ATUALIZADOS
+- index.html: integração Firebase no HTML atual.
+- api/: funções da Vercel para dados, relatórios, usuários e migração pontual.
+- package.json: dependência firebase-admin (Node 20).
+
+ANTES DE PUBLICAR
+1. Confirme no Firebase Console que o projeto usado no HTML é pack-de-grupos-c9ba3 e que Authentication > Sign-in method > Email/Password está ativado.
+2. Em Authentication > Settings > Authorized domains, inclua o domínio exato do site publicado na Vercel.
+3. Na Vercel, confirme as quatro variáveis já configuradas: FIREBASE_SERVICE_ACCOUNT_JSON, APPS_SCRIPT_URL, PACK_BACKEND_SECRET e MIGRATION_SECRET. Não copie seus valores para o GitHub nem os envie no chat.
+4. Confirme que a variável APPS_SCRIPT_URL termina em /exec e aponta para o Web App v3 já publicado.
+5. Não altere o valor de PACK_BACKEND_SECRET no Apps Script ou na Vercel durante esta etapa.
+
+PUBLICAÇÃO DO CÓDIGO (SOMENTE DEPOIS DA CONFERÊNCIA)
+1. Baixe/guarde uma cópia do repositório atual antes de substituir arquivos.
+2. Envie para a raiz do repositório os arquivos e pastas deste pacote, mantendo a mesma estrutura. O index.html e os arquivos SEO/GEO devem ficar na raiz; a pasta api deve ficar na raiz; package.json deve ficar na raiz.
+3. Aguarde a implantação automática da Vercel terminar. Se houver erro de build, não tente migrar usuários; envie a mensagem de erro para análise.
+4. Primeiro teste apenas a página pública e confirme que ela abre, mostra os blocos e as quantidades de links. Não tente login ainda.
+5. Só depois faremos os testes de autenticação e permissões com uma conta de teste.
+
+MIGRAÇÃO DE USUÁRIOS — NÃO FAZER AGORA
+O endpoint api/migrate-users.js está incluído, mas deve ser usado somente após a implantação e os testes preliminares. Antes disso será necessário fazer backup da aba Database, revisar e-mails duplicados/inválidos e confirmar as contas existentes no Firebase. O endpoint deve ser executado uma única vez e removido logo depois, junto com a variável MIGRATION_SECRET.
+
+SEGURANÇA
+- Nunca publique FIREBASE_SERVICE_ACCOUNT_JSON, PACK_BACKEND_SECRET ou MIGRATION_SECRET no GitHub.
+- A chave apiKey do Firebase que aparece no HTML é configuração pública do SDK; não é a chave privada da conta de serviço.
+- Se qualquer etapa apresentar comportamento diferente do esperado, pare e não execute a migração.
