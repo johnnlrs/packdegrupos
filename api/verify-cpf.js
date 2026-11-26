@@ -26,10 +26,10 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ status: 'error', message: 'CPF inválido. Confira os 11 números digitados.' });
     }
 
-    // Chave dedicada recomendada; fallback mantém compatibilidade com a configuração atual da Vercel.
-    const secret = process.env.CPF_HASH_SECRET || process.env.PACK_BACKEND_SECRET;
-    if (!secret) {
-      return res.status(500).json({ status: 'error', message: 'A proteção de CPF não está configurada no servidor.' });
+    // Segredo exclusivo para derivação do identificador pseudonimizado do CPF.
+    const secret = process.env.CPF_HASH_SECRET;
+    if (!secret || secret.length < 32) {
+      return res.status(500).json({ status: 'error', message: 'A proteção de CPF ainda não foi configurada pelo administrador.' });
     }
     const cpfHash = crypto.createHmac('sha256', secret).update('packdegrupos:cpf:v1:' + cpf).digest('hex');
     const users = Array.isArray(data.users) ? data.users : [];
