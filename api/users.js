@@ -21,7 +21,7 @@ module.exports = async function handler(req, res) {
       const password = String(u.password || '');
       const name = String(u.name || '').trim();
       const whatsapp = String(u.whatsapp || '').trim();
-      if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || password.length < 6 || !name || !whatsapp) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 6 || !name || !whatsapp) {
         return res.status(400).json({ status: 'error', message: 'Informe nome, e-mail válido, WhatsApp e senha com pelo menos 6 caracteres.' });
       }
 
