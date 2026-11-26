@@ -96,7 +96,6 @@
             <!-- Dados da Sessão Ativa -->
             <div id="auth-logout-container" class="hidden flex items-center gap-3">
                 <span id="welcome-user-text" class="text-xs text-slate-200 font-medium"></span>
-                <span id="logged-user-cpf" class="hidden rounded-md bg-slate-700 px-2 py-1 text-xs font-semibold text-emerald-300" aria-live="polite"></span>
                 <button type="button" onclick="handleLogout()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium px-3 py-1.5 rounded transition">
                     Sair da Conta
                 </button>
@@ -332,34 +331,6 @@
         <p id="toast-message" class="text-sm font-medium"></p>
     </div>
 
-    <!-- VERIFICAÇÃO OBRIGATÓRIA DE CPF PARA NOVOS USUÁRIOS (ADMIN ISENTO) -->
-    <div id="cpf-onboarding-modal" class="fixed inset-0 z-[100] bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4 hidden" role="dialog" aria-modal="true" aria-labelledby="cpf-onboarding-title">
-        <div class="w-full max-w-lg rounded-2xl bg-white p-6 sm:p-8 shadow-2xl border border-slate-200">
-            <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-3xl">🔐</div>
-            <h2 id="cpf-onboarding-title" class="text-center text-xl sm:text-2xl font-extrabold text-slate-900">Verificação obrigatória de segurança</h2>
-            <p class="mt-4 text-sm leading-relaxed text-slate-700">
-                Para proteger nossa comunidade contra cópias, compartilhamento indevido de acessos e uso não autorizado da plataforma, precisamos concluir esta etapa do seu cadastro.
-            </p>
-            <p class="mt-3 text-sm leading-relaxed text-slate-700">
-                Informe seu <strong>CPF verdadeiro</strong>. A validação é obrigatória para liberar o acesso ao conteúdo da plataforma.
-            </p>
-            <p class="mt-3 rounded-xl bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
-                <strong>Privacidade:</strong> o número do CPF é validado no servidor e convertido em um código criptográfico para evitar armazenamento em texto aberto. O código será usado para impedir associação do mesmo CPF a mais de um cadastro. A validação dos dígitos não comprova a titularidade do documento. Para dúvidas ou solicitações sobre seus dados, entre em contato com o administrador.
-            </p>
-            <label for="cpf-onboarding-input" class="mt-5 block text-left text-sm font-bold text-slate-800">Seu CPF</label>
-            <input id="cpf-onboarding-input" type="text" inputmode="numeric" autocomplete="off" maxlength="14" placeholder="000.000.000-00" class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-lg tracking-wider outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-            <label class="mt-4 flex items-start gap-3 text-left text-xs leading-relaxed text-slate-600">
-                <input id="cpf-onboarding-accepted" type="checkbox" class="mt-0.5 h-4 w-4 shrink-0 accent-blue-600">
-                <span>Li e estou ciente da finalidade e das informações de privacidade apresentadas acima. Confirmo que informei meu próprio CPF.</span>
-            </label>
-            <p id="cpf-onboarding-error" class="mt-3 hidden text-sm font-semibold text-rose-600" role="alert"></p>
-            <button id="cpf-onboarding-submit" type="button" onclick="submitCpfVerification()" class="mt-5 w-full rounded-xl bg-slate-900 px-5 py-3 font-bold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50">
-                Confirmar CPF e liberar acesso
-            </button>
-            <p class="mt-3 text-center text-[11px] text-slate-400">O acesso permanece bloqueado até a conclusão desta etapa.</p>
-        </div>
-    </div>
-
     <!-- MODAL DE BLOQUEIO -->
     <div id="lock-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 text-center shadow-2xl border border-slate-100">
@@ -391,9 +362,6 @@
         let sessionRole = 'guest'; 
         let loggedUserLabel = '';
         let loggedUserEmail = '';
-        let cpfOnboardingRequired = false;
-        let cpfSubmitting = false;
-
         let initialUsers = []; // Perfis são carregados somente pela API autenticada.
 
         let initialBlocksOrder = [
@@ -540,18 +508,10 @@
                     sessionRole = result.user.role || 'guest';
                     loggedUserLabel = result.user.name || result.user.username || result.user.email || 'Usuário';
                     loggedUserEmail = result.user.email || '';
-                    cpfOnboardingRequired = !!result.user.cpfRequired;
-                    if (sessionRole === 'active' && !cpfOnboardingRequired) {
-                        loadOwnCpfDisplay();
-                    } else {
-                        const cpfBadge = document.getElementById('logged-user-cpf');
-                        if (cpfBadge) { cpfBadge.textContent = ''; cpfBadge.classList.add('hidden'); }
-                    }
                 } else {
                     sessionRole = 'guest';
                     loggedUserLabel = '';
                     loggedUserEmail = '';
-                    cpfOnboardingRequired = false;
                 }
                 renderAdminUserList();
                 applyStrictPermissionsUI();
@@ -1540,84 +1500,6 @@
             modal.classList.add('opacity-0');
             setTimeout(() => modal.classList.add('hidden'), 300);
         }
-
-        async function loadOwnCpfDisplay() {
-            const badge = document.getElementById('logged-user-cpf');
-            if (!badge) return;
-            badge.classList.add('hidden');
-            badge.textContent = '';
-            if (sessionRole !== 'active' || cpfOnboardingRequired) return;
-            try {
-                const result = await apiRequest('/api/verify-cpf', { method: 'GET' });
-                if (result && result.status === 'success' && /^\d{11}$/.test(String(result.cpf || ''))) {
-                    const cpf = String(result.cpf);
-                    badge.textContent = 'CPF: ' + cpf.slice(0,3) + '.' + cpf.slice(3,6) + '.' + cpf.slice(6,9) + '-' + cpf.slice(9);
-                    badge.classList.remove('hidden');
-                }
-            } catch (error) {
-                console.warn('Não foi possível carregar a exibição do CPF:', error.message);
-            }
-        }
-
-        function updateCpfOnboardingModal() {
-            const modal = document.getElementById('cpf-onboarding-modal');
-            if (!modal) return;
-            const required = sessionRole === 'active' && cpfOnboardingRequired;
-            modal.classList.toggle('hidden', !required);
-            document.body.classList.toggle('overflow-hidden', required);
-            if (required) {
-                const input = document.getElementById('cpf-onboarding-input');
-                if (input && document.activeElement !== input) setTimeout(() => input.focus(), 80);
-            }
-        }
-
-        async function submitCpfVerification() {
-            if (cpfSubmitting || sessionRole !== 'active' || !cpfOnboardingRequired) return;
-            const input = document.getElementById('cpf-onboarding-input');
-            const accepted = document.getElementById('cpf-onboarding-accepted').checked;
-            const errorBox = document.getElementById('cpf-onboarding-error');
-            const button = document.getElementById('cpf-onboarding-submit');
-            const cpf = String(input.value || '').replace(/\\D/g, '');
-            errorBox.classList.add('hidden');
-            if (cpf.length !== 11) {
-                errorBox.textContent = 'Digite os 11 números do seu CPF.';
-                errorBox.classList.remove('hidden');
-                input.focus();
-                return;
-            }
-            if (!accepted) {
-                errorBox.textContent = 'Marque a confirmação de leitura para continuar.';
-                errorBox.classList.remove('hidden');
-                return;
-            }
-            cpfSubmitting = true;
-            button.disabled = true;
-            button.textContent = 'Validando com segurança...';
-            try {
-                await apiRequest('/api/verify-cpf', {
-                    method: 'POST',
-                    body: JSON.stringify({ cpf, accepted: true })
-                });
-                input.value = '';
-                document.getElementById('cpf-onboarding-accepted').checked = false;
-                await fetchCloudData();
-                showToast('Verificação concluída. Seu acesso foi liberado!', '✅');
-            } catch (error) {
-                errorBox.textContent = error.message || 'Não foi possível validar o CPF. Tente novamente.';
-                errorBox.classList.remove('hidden');
-            } finally {
-                cpfSubmitting = false;
-                button.disabled = false;
-                button.textContent = 'Confirmar CPF e liberar acesso';
-            }
-        }
-
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape' && cpfOnboardingRequired && sessionRole === 'active') {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-        }, true);
 
     </script>
 </body>
