@@ -33,10 +33,12 @@ module.exports = async function handler(req, res) {
     }
     const cpfHash = crypto.createHmac('sha256', secret).update('packdegrupos:cpf:v1:' + cpf).digest('hex');
     const users = Array.isArray(data.users) ? data.users : [];
-    const duplicate = users.find(user =>
-      String(user.firebaseUid || '') !== String(profile.firebaseUid || '') &&
-      user.cpfHash && crypto.timingSafeEqual(Buffer.from(String(user.cpfHash)), Buffer.from(cpfHash))
-    );
+    const duplicate = users.find(user => {
+      const storedHash = String(user.cpfHash || '');
+      return String(user.firebaseUid || '') !== String(profile.firebaseUid || '') &&
+        storedHash.length === cpfHash.length &&
+        crypto.timingSafeEqual(Buffer.from(storedHash), Buffer.from(cpfHash));
+    });
     if (duplicate) {
       return res.status(409).json({ status: 'error', message: 'Este CPF já está associado a outro cadastro da plataforma. Entre em contato com o administrador.' });
     }
