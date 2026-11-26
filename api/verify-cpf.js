@@ -98,7 +98,7 @@ function deriveEncryptionKey(secret) {
 }
 
 function isValidCpf(cpf) {
-  if (!/^\\d{11}$/.test(cpf) || /^(\\d)\\1{10}$/.test(cpf)) return false;
+  if (!/^\d{11}$/.test(cpf) || /^(\d)\1{10}$/.test(cpf)) return false;
   const digits = cpf.split('').map(Number);
   for (let position = 9; position < 11; position++) {
     let sum = 0;
