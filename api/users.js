@@ -21,22 +21,80 @@ module.exports = async function handler(req, res) {
       const password = String(u.password || '');
       const name = String(u.name || '').trim();
       const whatsapp = String(u.whatsapp || '').trim();
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 6 || !name || !whatsapp) {
+      if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || password.length < 6 || !name || !whatsapp) {
         return res.status(400).json({ status: 'error', message: 'Informe nome, e-mail válido, WhatsApp e senha com pelo menos 6 caracteres.' });
       }
+
+      const matchingProfiles = users
+        .map((profile, profileIndex) => ({ profile, profileIndex }))
+        .filter(item => String(item.profile.email || '').trim().toLowerCase() === email);
+      if (matchingProfiles.length > 1) {
+        return res.status(409).json({ status: 'error', message: 'Há mais de um cadastro com este e-mail na base. Revise os cadastros antes de recadastrar.' });
+      }
+      const legacyMatch = matchingProfiles[0];
+      if (legacyMatch && (legacyMatch.profile.role === 'admin' || legacyMatch.profile.firebaseUid)) {
+        return res.status(409).json({ status: 'error', message: 'Este e-mail já está vinculado a uma conta. Use a opção de edição ou revise o cadastro existente.' });
+      }
+
       let record;
+      let createdInFirebase = false;
       try {
-        record = await auth.createUser({ email, password, displayName: name.slice(0, 100), disabled: false });
-        await auth.setCustomUserClaims(record.uid, { packRole: 'active' });
-        users.push({
-          id: Date.now(), firebaseUid: record.uid,
-          username: email.split('@')[0].slice(0, 100), name: name.slice(0, 100), email,
-          whatsapp: whatsapp.slice(0, 40), role: 'active'
+        try {
+          record = await auth.getUserByEmail(email);
+        } catch (lookupError) {
+          if (lookupError.code !== 'auth/user-not-found') throw lookupError;
+        }
+
+        if (record) {
+          const linkedProfile = users.find(profile => String(profile.firebaseUid || '') === String(record.uid));
+          if (linkedProfile) {
+            return res.status(409).json({ status: 'error', message: 'Este e-mail já pertence a uma conta vinculada a outro cadastro. Nenhuma conta foi alterada.' });
+          }
+          // Reaproveita uma conta Firebase sem vínculo, atualizando a senha informada
+          // pelo administrador e preservando as demais custom claims existentes.
+          record = await auth.updateUser(record.uid, {
+            password,
+            displayName: name.slice(0, 100),
+            disabled: false
+          });
+          await auth.setCustomUserClaims(record.uid, {
+            ...(record.customClaims || {}),
+            packRole: 'active'
+          });
+        } else {
+          record = await auth.createUser({
+            email,
+            password,
+            displayName: name.slice(0, 100),
+            disabled: false
+          });
+          createdInFirebase = true;
+          await auth.setCustomUserClaims(record.uid, { packRole: 'active' });
+        }
+
+        const profile = {
+          ...(legacyMatch ? legacyMatch.profile : {}),
+          id: legacyMatch ? legacyMatch.profile.id : Date.now(),
+          firebaseUid: record.uid,
+          username: email.split('@')[0].slice(0, 100),
+          name: name.slice(0, 100),
+          email,
+          whatsapp: whatsapp.slice(0, 40),
+          role: 'active'
+        };
+        if (legacyMatch) users[legacyMatch.profileIndex] = profile;
+        else users.push(profile);
+
+        const saved = await callAppsScript({
+          action: 'save_users',
+          users,
+          revision: Number(data.revision || 0)
         });
-        const saved = await callAppsScript({ action: 'save_users', users, revision: Number(data.revision || 0) });
-        return res.status(200).json({ status: 'success', user: users[users.length - 1], revision: saved.revision });
+        return res.status(200).json({ status: 'success', user: profile, revision: saved.revision });
       } catch (error) {
-        if (record) { try { await auth.deleteUser(record.uid); } catch (_) {} }
+        if (createdInFirebase && record) {
+          try { await auth.deleteUser(record.uid); } catch (_) {}
+        }
         throw error;
       }
     }
