@@ -43,11 +43,20 @@ module.exports = async function handler(req, res) {
 
     const id = String(body.id || (body.user && body.user.id) || '');
     const index = users.findIndex(u => String(u.id) === id);
-    if (index < 0 || users[index].role === 'admin' || !users[index].firebaseUid) {
-      return res.status(404).json({ status: 'error', message: 'Usuário não encontrado ou ainda não migrado para o Firebase.' });
+    if (index < 0 || users[index].role === 'admin') {
+      return res.status(404).json({ status: 'error', message: 'Usuário não encontrado.' });
     }
     const current = users[index];
-    const uid = String(current.firebaseUid);
+    const uid = String(current.firebaseUid || '');
+
+    // Cadastros antigos sem vínculo Firebase podem ser removidos da planilha.
+    // Só ações que dependem de uma conta de autenticação exigem firebaseUid.
+    if (action !== 'delete' && !uid) {
+      return res.status(409).json({
+        status: 'error',
+        message: 'Este cadastro antigo ainda não possui vínculo com o Firebase. Exclua-o ou recadastre-o antes de editar seu acesso.'
+      });
+    }
 
     if (action === 'update') {
       const u = body.user || {};
@@ -93,12 +102,14 @@ module.exports = async function handler(req, res) {
     if (action === 'delete') {
       users.splice(index, 1);
       const saved = await callAppsScript({ action: 'save_users', users, revision: Number(data.revision || 0) });
-      try {
-        await auth.deleteUser(uid);
-      } catch (error) {
-        // Restaura o perfil se a exclusão da conta Firebase falhar.
-        try { await callAppsScript({ action: 'save_users', users: originalUsers, revision: Number(saved.revision || 0) }); } catch (_) {}
-        throw error;
+      if (uid) {
+        try {
+          await auth.deleteUser(uid);
+        } catch (error) {
+          // Restaura o perfil se a exclusão da conta Firebase falhar.
+          try { await callAppsScript({ action: 'save_users', users: originalUsers, revision: Number(saved.revision || 0) }); } catch (_) {}
+          throw error;
+        }
       }
       return res.status(200).json({ status: 'success', revision: saved.revision });
     }
