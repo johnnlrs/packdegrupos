@@ -55,7 +55,10 @@ function buildLinkCounts(links) {
 }
 
 function safeProfile(user) {
-  const { password, cpfHash, ...safe } = user || {};
+  const {
+    password, cpfHash, cpfVerifiedAt, cpfNoticeAcceptedAt, cpfNoticeVersion,
+    ...safe
+  } = user || {};
   safe.cpfRequired = !!(user && user.cpfRequired && !user.cpfVerifiedAt);
   return safe;
 }
