@@ -421,7 +421,7 @@
         };
         const firebaseApp = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(console.error);
+        // A persistência é aguardada antes de observar o estado de autenticação.
         let currentPackUser = null;
         let authReady = false;
 
@@ -453,12 +453,20 @@
             });
         }
 
-        window.addEventListener('DOMContentLoaded', function() {
+        window.addEventListener('DOMContentLoaded', async function() {
             // Remove o cache antigo: ele foi criado antes da autenticação segura.
             try {
                 localStorage.removeItem('packdegrupos_cloud_cache_v1');
                 localStorage.removeItem('packdegrupos_session_v1');
             } catch (_) {}
+
+            try {
+                await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+            } catch (error) {
+                console.error('Não foi possível configurar a persistência local da sessão:', error);
+                showToast('Aviso: não foi possível manter a sessão neste navegador.', '⚠️');
+            }
+
             auth.onAuthStateChanged(async (firebaseUser) => {
                 currentPackUser = firebaseUser;
                 if (!firebaseUser) {
@@ -472,12 +480,17 @@
                     applyStrictPermissionsUI();
                     return;
                 }
+
                 try {
                     await fetchCloudData();
                 } catch (error) {
-                    console.error(error);
-                    showToast(error.message || 'Não foi possível validar sua conta.', '❌');
-                    await auth.signOut();
+                    // Uma falha temporária na API/planilha não deve encerrar a sessão Firebase.
+                    console.error('Falha ao validar/carregar o perfil:', error);
+                    sessionRole = 'guest';
+                    loggedUserLabel = '';
+                    loggedUserEmail = '';
+                    applyStrictPermissionsUI();
+                    showToast('Não foi possível validar seu acesso agora. Sua sessão foi preservada; atualize a página e tente novamente.', '⚠️');
                 } finally {
                     authReady = true;
                 }
@@ -625,10 +638,10 @@
             renderDynamicBlocks();
         }
 
-        function setAccordionOpenHeight(content, maxViewportPercent = 78) {
+        function setAccordionOpenHeight(content) {
             if (!content) return;
-            const viewportLimit = Math.max(220, Math.floor(window.innerHeight * (maxViewportPercent / 100)));
-            content.style.maxHeight = Math.min(content.scrollHeight, viewportLimit) + 'px';
+            // Não limitar à altura da janela: caixas grandes precisam revelar todos os links.
+            content.style.maxHeight = (content.scrollHeight + 2) + 'px';
         }
 
         function toggleSimpleSection(contentId, arrowId) {
