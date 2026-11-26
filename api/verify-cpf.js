@@ -3,13 +3,26 @@ const { requirePackProfile } = require('./_lib/authorization');
 const { callAppsScript } = require('./_lib/appsScript');
 
 module.exports = async function handler(req, res) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
+  if (req.method !== 'POST' && req.method !== 'GET') {
+    res.setHeader('Allow', 'GET, POST');
     return res.status(405).json({ status: 'error', message: 'Método não permitido.' });
   }
 
   try {
     const { profile, data } = await requirePackProfile(req, ['active']);
+    if (req.method === 'GET') {
+      if (!profile.cpfVerifiedAt || !profile.cpfEncrypted) {
+        return res.status(404).json({ status: 'error', message: 'CPF completo não disponível neste cadastro.' });
+      }
+      const key = deriveEncryptionKey(getSecret());
+      const decipher = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(profile.cpfEncrypted.iv, 'hex'));
+      decipher.setAuthTag(Buffer.from(profile.cpfEncrypted.tag, 'hex'));
+      const plaintext = Buffer.concat([
+        decipher.update(Buffer.from(profile.cpfEncrypted.ciphertext, 'hex')),
+        decipher.final()
+      ]).toString('utf8');
+      return res.status(200).json({ status: 'success', cpf: plaintext });
+    }
     if (!profile.cpfRequired) {
       return res.status(409).json({ status: 'error', message: 'Este cadastro não exige verificação de CPF.' });
     }
@@ -26,12 +39,17 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ status: 'error', message: 'CPF inválido. Confira os 11 números digitados.' });
     }
 
-    // Segredo exclusivo para derivação do identificador pseudonimizado do CPF.
-    const secret = process.env.CPF_HASH_SECRET;
-    if (!secret || secret.length < 32) {
-      return res.status(500).json({ status: 'error', message: 'A proteção de CPF ainda não foi configurada pelo administrador.' });
-    }
+    const secret = getSecret();
     const cpfHash = crypto.createHmac('sha256', secret).update('packdegrupos:cpf:v1:' + cpf).digest('hex');
+    const encryptionKey = deriveEncryptionKey(secret);
+    const iv = crypto.randomBytes(12);
+    const cipher = crypto.createCipheriv('aes-256-gcm', encryptionKey, iv);
+    const ciphertext = Buffer.concat([cipher.update(cpf, 'utf8'), cipher.final()]);
+    const cpfEncrypted = {
+      iv: iv.toString('hex'),
+      tag: cipher.getAuthTag().toString('hex'),
+      ciphertext: ciphertext.toString('hex')
+    };
     const users = Array.isArray(data.users) ? data.users : [];
     const duplicate = users.find(user => {
       const storedHash = String(user.cpfHash || '');
@@ -48,6 +66,7 @@ module.exports = async function handler(req, res) {
       return {
         ...user,
         cpfHash,
+        cpfEncrypted,
         cpfVerifiedAt: new Date().toISOString(),
         cpfNoticeAcceptedAt: new Date().toISOString(),
         cpfNoticeVersion: '2026-11-26-v1'
@@ -63,6 +82,20 @@ module.exports = async function handler(req, res) {
     return res.status(error.statusCode || 500).json({ status: 'error', message: error.message || 'Não foi possível concluir a verificação.' });
   }
 };
+
+function getSecret() {
+  const secret = process.env.CPF_HASH_SECRET;
+  if (!secret || secret.length < 32) {
+    const error = new Error('A proteção de CPF ainda não foi configurada pelo administrador.');
+    error.statusCode = 500;
+    throw error;
+  }
+  return secret;
+}
+
+function deriveEncryptionKey(secret) {
+  return crypto.createHash('sha256').update('packdegrupos:cpf-encryption:v1:' + secret).digest();
+}
 
 function isValidCpf(cpf) {
   if (!/^\\d{11}$/.test(cpf) || /^(\\d)\\1{10}$/.test(cpf)) return false;
