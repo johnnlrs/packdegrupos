@@ -17,9 +17,6 @@ module.exports = async function handler(req, res) {
       if (profile.role === 'on_hold') {
         return res.status(200).json({ status: 'success', hasData: true, revision: data.revision, user: safeProfile(profile), blocks: [], links: {}, users: [] });
       }
-      if (profile.cpfRequired && !profile.cpfVerifiedAt && profile.role !== 'admin') {
-        return res.status(200).json({ status: 'success', hasData: true, revision: data.revision, user: safeProfile(profile), blocks: [], links: {}, users: [] });
-      }
       return res.status(200).json({
         status: 'success', hasData: data.hasData, revision: data.revision,
         user: safeProfile(profile),
@@ -59,6 +56,5 @@ function safeProfile(user) {
     password, cpfHash, cpfEncrypted, cpfVerifiedAt, cpfNoticeAcceptedAt, cpfNoticeVersion,
     ...safe
   } = user || {};
-  safe.cpfRequired = !!(user && user.cpfRequired && !user.cpfVerifiedAt);
   return safe;
 }
