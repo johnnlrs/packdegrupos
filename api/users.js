@@ -80,7 +80,10 @@ module.exports = async function handler(req, res) {
           name: name.slice(0, 100),
           email,
           whatsapp: whatsapp.slice(0, 40),
-          role: 'active'
+          role: 'active',
+          cpfRequired: true,
+          cpfVerifiedAt: null,
+          cpfHash: null
         };
         if (legacyMatch) users[legacyMatch.profileIndex] = profile;
         else users.push(profile);
